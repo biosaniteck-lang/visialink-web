@@ -1,0 +1,419 @@
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Inter:wght@400;500;600&display=swap');
+
+:root {
+  --ink: #1c2e2b;
+  --ink-soft: #4a5a56;
+  --porcelain: #f1efe8;
+  --porcelain-line: #ddd9cd;
+  --brass: #b8863e;
+  --brass-dark: #8f6a2f;
+  --sage: #5c7c6f;
+  --rust: #a6432b;
+
+  --font-display: 'Newsreader', Georgia, serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  --max-width: 960px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--porcelain);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+}
+
+button {
+  font-family: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--brass);
+  outline-offset: 2px;
+}
+
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ---------------------------------------------------------- */
+/* Topbar — nome e telefono dello studio cliente                */
+/* ---------------------------------------------------------- */
+.topbar {
+  background: var(--ink);
+  color: #cfd6d1;
+  font-size: 13px;
+}
+
+.topbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 24px;
+}
+
+.topbar-inner a {
+  color: var(--porcelain);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.topbar-inner a:hover {
+  color: var(--brass);
+}
+
+/* ---------------------------------------------------------- */
+/* Nav                                                          */
+/* ---------------------------------------------------------- */
+.nav {
+  border-bottom: 1px solid var(--porcelain-line);
+  padding: 20px 0;
+}
+
+.nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--ink);
+  padding: 0;
+}
+
+.nav-logo-icon {
+  height: 28px;
+  width: auto;
+  display: block;
+}
+
+.nav-cta {
+  background: var(--ink);
+  color: var(--porcelain);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 3px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.nav-cta:hover {
+  background: var(--brass-dark);
+}
+
+/* ---------------------------------------------------------- */
+/* Hero                                                          */
+/* ---------------------------------------------------------- */
+.hero {
+  background: var(--ink);
+  color: var(--porcelain);
+  padding: 88px 0 96px;
+}
+
+.hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(38px, 6vw, 58px);
+  font-weight: 500;
+  line-height: 1.1;
+  margin: 0 0 24px;
+  max-width: 14ch;
+}
+
+.hero p {
+  font-size: 18px;
+  color: #cfd6d1;
+  max-width: 46ch;
+  margin: 0 0 36px;
+}
+
+.hero-cta {
+  background: var(--brass);
+  color: var(--ink);
+  border: none;
+  padding: 14px 28px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.hero-cta:hover {
+  background: #cc9a4e;
+}
+
+/* ---------------------------------------------------------- */
+/* Sezioni generiche                                             */
+/* ---------------------------------------------------------- */
+.section {
+  padding: 64px 0;
+}
+
+.section h2 {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 500;
+  margin: 0 0 32px;
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.chip {
+  border: 1px solid var(--porcelain-line);
+  background: #fff;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+}
+
+@media (max-width: 720px) {
+  .steps {
+    grid-template-columns: 1fr;
+  }
+}
+
+.step-number {
+  font-family: var(--font-display);
+  font-size: 34px;
+  color: var(--brass);
+  margin: 0 0 8px;
+}
+
+.step-title {
+  font-weight: 600;
+  margin: 0 0 6px;
+}
+
+.step-desc {
+  color: var(--ink-soft);
+  font-size: 15px;
+  margin: 0;
+}
+
+/* ---------------------------------------------------------- */
+/* Registro / ledger — righe di elenco (medici, slot)            */
+/* ---------------------------------------------------------- */
+.ledger {
+  border-top: 1px solid var(--porcelain-line);
+}
+
+.ledger-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--porcelain-line);
+}
+
+.ledger-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ledger-name {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.ledger-meta {
+  color: var(--ink-soft);
+  font-size: 14px;
+}
+
+.ledger-time {
+  font-variant-numeric: tabular-nums;
+  font-size: 17px;
+  font-weight: 500;
+  min-width: 92px;
+}
+
+.ledger-action {
+  background: transparent;
+  border: 1px solid var(--ink);
+  color: var(--ink);
+  padding: 9px 18px;
+  border-radius: 3px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ledger-action:hover {
+  background: var(--ink);
+  color: var(--porcelain);
+}
+
+.ledger-empty {
+  padding: 32px 0;
+  color: var(--ink-soft);
+}
+
+.day-heading {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 500;
+  margin: 40px 0 4px;
+  text-transform: capitalize;
+}
+
+.day-heading:first-child {
+  margin-top: 0;
+}
+
+/* ---------------------------------------------------------- */
+/* Form                                                          */
+/* ---------------------------------------------------------- */
+.form-field {
+  margin-bottom: 20px;
+}
+
+.form-field label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.form-field input,
+.form-field textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--porcelain-line);
+  border-radius: 3px;
+  font-size: 15px;
+  font-family: inherit;
+  background: #fff;
+  color: var(--ink);
+}
+
+.form-field textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.radio-group {
+  display: flex;
+  gap: 20px;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+}
+
+.summary-card {
+  background: #fff;
+  border: 1px solid var(--porcelain-line);
+  border-left: 3px solid var(--brass);
+  padding: 20px 24px;
+  margin-bottom: 32px;
+}
+
+.summary-card p {
+  margin: 4px 0;
+}
+
+.error-box {
+  background: #fbe9e5;
+  border-left: 3px solid var(--rust);
+  color: var(--rust);
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.submit-btn {
+  background: var(--ink);
+  color: var(--porcelain);
+  border: none;
+  padding: 14px 28px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.submit-btn:hover {
+  background: var(--brass-dark);
+}
+
+.submit-btn:disabled {
+  background: var(--porcelain-line);
+  color: var(--ink-soft);
+  cursor: not-allowed;
+}
+
+.back-link {
+  background: none;
+  border: none;
+  color: var(--ink-soft);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 24px;
+}
+
+/* ---------------------------------------------------------- */
+/* Conferma                                                      */
+/* ---------------------------------------------------------- */
+.confirm-mark {
+  color: var(--sage);
+  font-family: var(--font-display);
+  font-size: 40px;
+  margin-bottom: 8px;
+}
+
+/* ---------------------------------------------------------- */
+/* Footer                                                        */
+/* ---------------------------------------------------------- */
+.footer {
+  border-top: 1px solid var(--porcelain-line);
+  padding: 32px 0;
+  color: var(--ink-soft);
+  font-size: 14px;
+}
