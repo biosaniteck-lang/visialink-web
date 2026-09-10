@@ -47,8 +47,9 @@ export default function Conferma({ medico, slot, paziente, prenotazioneId, onTor
       )}
 
       <p style={{ color: 'var(--ink-soft)', marginBottom: 32 }}>
-        Riceverai una conferma via email. Per modificare o cancellare la
-        prenotazione, contatta direttamente lo studio.
+        Per modificare o cancellare la prenotazione, usa il codice qui sopra
+        nella sezione "Gestisci una prenotazione", oppure contatta
+        direttamente lo studio.
       </p>
 
       <button className="submit-btn" onClick={onTornaHome}>
