@@ -129,8 +129,79 @@ function FormModificaStudio({ adminKey, sede, onAggiornata }) {
   );
 }
 
+function FormGeneraSlot({ adminKey, medicoId, onGenerati }) {
+  const [data, setData] = useState('');
+  const [oraInizio, setOraInizio] = useState('09:00');
+  const [oraFine, setOraFine] = useState('13:00');
+  const [durata, setDurata] = useState(30);
+  const [invio, setInvio] = useState(false);
+  const [errore, setErrore] = useState(null);
+  const [esito, setEsito] = useState(null);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setErrore(null);
+    setEsito(null);
+
+    if (!data) {
+      setErrore('Seleziona una data.');
+      return;
+    }
+
+    setInvio(true);
+    try {
+      const risultato = await api.generaSlotBulk(
+        {
+          medico_id: medicoId,
+          data,
+          ora_inizio: oraInizio,
+          ora_fine: oraFine,
+          durata_minuti: Number(durata) || 30,
+        },
+        adminKey
+      );
+      setEsito(`${risultato.slot_creati} slot creati per il ${data}.`);
+      onGenerati?.();
+    } catch (err) {
+      setErrore(err.message);
+    } finally {
+      setInvio(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} style={{ marginTop: 12 }}>
+      {errore && <div className="error-box">{errore}</div>}
+      {esito && <p style={{ color: 'var(--sage)', marginBottom: 12 }}>{esito}</p>}
+
+      <div className="form-field">
+        <label>Data</label>
+        <input type="date" value={data} onChange={(e) => setData(e.target.value)} />
+      </div>
+      <div style={{ display: 'flex', gap: 12 }}>
+        <div className="form-field" style={{ flex: 1 }}>
+          <label>Dalle</label>
+          <input type="time" value={oraInizio} onChange={(e) => setOraInizio(e.target.value)} />
+        </div>
+        <div className="form-field" style={{ flex: 1 }}>
+          <label>Alle</label>
+          <input type="time" value={oraFine} onChange={(e) => setOraFine(e.target.value)} />
+        </div>
+      </div>
+      <div className="form-field">
+        <label>Durata di ogni visita (minuti)</label>
+        <input type="number" value={durata} onChange={(e) => setDurata(e.target.value)} />
+      </div>
+      <button className="submit-btn" type="submit" disabled={invio}>
+        {invio ? 'Generazione…' : 'Genera slot'}
+      </button>
+    </form>
+  );
+}
+
 function RigaMedico({ adminKey, medico, onAggiornato, onEliminato }) {
   const [modifica, setModifica] = useState(false);
+  const [mostraSlot, setMostraSlot] = useState(false);
   const [nome, setNome] = useState(medico.nome);
   const [specialita, setSpecialita] = useState(medico.specialita || '');
   const [durata, setDurata] = useState(medico.durata_visita_default);
@@ -175,26 +246,36 @@ function RigaMedico({ adminKey, medico, onAggiornato, onEliminato }) {
 
   if (!modifica) {
     return (
-      <div className="ledger-row" style={{ flexWrap: 'wrap' }}>
-        <div className="ledger-main">
-          <span className="ledger-name">{medico.nome}</span>
-          {medico.specialita && <span className="ledger-meta">{medico.specialita}</span>}
-          {errore && <span style={{ color: 'var(--rust)', fontSize: 13 }}>{errore}</span>}
+      <div style={{ borderBottom: '1px solid var(--porcelain-line)' }}>
+        <div className="ledger-row" style={{ flexWrap: 'wrap', border: 'none' }}>
+          <div className="ledger-main">
+            <span className="ledger-name">{medico.nome}</span>
+            {medico.specialita && <span className="ledger-meta">{medico.specialita}</span>}
+            {errore && <span style={{ color: 'var(--rust)', fontSize: 13 }}>{errore}</span>}
+          </div>
+          <span className="ledger-meta">{medico.durata_visita_default} min</span>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="ledger-action" onClick={() => setMostraSlot((v) => !v)} disabled={invio}>
+              {mostraSlot ? 'Chiudi' : 'Genera slot'}
+            </button>
+            <button className="ledger-action" onClick={() => setModifica(true)} disabled={invio}>
+              Modifica
+            </button>
+            <button
+              className="ledger-action"
+              style={{ borderColor: 'var(--rust)', color: 'var(--rust)' }}
+              onClick={handleElimina}
+              disabled={invio}
+            >
+              Elimina
+            </button>
+          </div>
         </div>
-        <span className="ledger-meta">{medico.durata_visita_default} min</span>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button className="ledger-action" onClick={() => setModifica(true)} disabled={invio}>
-            Modifica
-          </button>
-          <button
-            className="ledger-action"
-            style={{ borderColor: 'var(--rust)', color: 'var(--rust)' }}
-            onClick={handleElimina}
-            disabled={invio}
-          >
-            Elimina
-          </button>
-        </div>
+        {mostraSlot && (
+          <div style={{ padding: '0 0 20px' }}>
+            <FormGeneraSlot adminKey={adminKey} medicoId={medico.id} />
+          </div>
+        )}
       </div>
     );
   }
@@ -439,6 +520,80 @@ function FormNuovoMedico({ adminKey, sede, onCreato }) {
   );
 }
 
+function ElencoPrenotazioni({ adminKey, sedeId }) {
+  const [prenotazioni, setPrenotazioni] = useState([]);
+  const [caricamento, setCaricamento] = useState(true);
+  const [errore, setErrore] = useState(null);
+
+  const carica = () => {
+    setCaricamento(true);
+    api
+      .listaPrenotazioni(sedeId, adminKey)
+      .then(setPrenotazioni)
+      .catch((err) => setErrore(err.message))
+      .finally(() => setCaricamento(false));
+  };
+
+  useEffect(carica, [sedeId]);
+
+  const annulla = async (id) => {
+    if (!window.confirm('Annullare questa prenotazione?')) return;
+    try {
+      await api.cancellaPrenotazione(id);
+      carica();
+    } catch (err) {
+      setErrore(err.message);
+    }
+  };
+
+  return (
+    <>
+      <h2 style={{ fontSize: 22, marginTop: 40 }}>Prenotazioni</h2>
+
+      {errore && <div className="error-box">{errore}</div>}
+      {caricamento && <p className="ledger-empty">Caricamento…</p>}
+      {!caricamento && prenotazioni.length === 0 && !errore && (
+        <p className="ledger-empty">Nessuna prenotazione ancora per questo studio.</p>
+      )}
+
+      <div className="ledger">
+        {prenotazioni.map((p) => {
+          const slot = p.slot_disponibilita;
+          const medico = slot?.medici;
+          const paziente = p.pazienti;
+          return (
+            <div className="ledger-row" key={p.id} style={{ flexWrap: 'wrap' }}>
+              <div className="ledger-main">
+                <span className="ledger-name">
+                  {paziente?.nome} {paziente?.cognome}
+                </span>
+                <span className="ledger-meta">
+                  {medico?.nome} — {slot?.data} {slot?.ora_inizio?.slice(0, 5)}
+                </span>
+                <span className="ledger-meta">
+                  {p.tipo === 'privata' ? 'Privata' : 'SSN'} · {p.codice_breve}
+                </span>
+              </div>
+              <span className="ledger-meta">
+                {p.stato === 'confermata' ? 'Confermata' : p.stato === 'cancellata' ? 'Annullata' : p.stato}
+              </span>
+              {p.stato === 'confermata' && (
+                <button
+                  className="ledger-action"
+                  style={{ borderColor: 'var(--rust)', color: 'var(--rust)' }}
+                  onClick={() => annulla(p.id)}
+                >
+                  Annulla
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </>
+  );
+}
+
 function DettaglioStudio({ adminKey, sede, onIndietro, onSedeAggiornata }) {
   const [medici, setMedici] = useState([]);
   const [caricamento, setCaricamento] = useState(true);
@@ -498,6 +653,8 @@ function DettaglioStudio({ adminKey, sede, onIndietro, onSedeAggiornata }) {
       </div>
 
       <FormNuovoMedico adminKey={adminKey} sede={sede} onCreato={caricaMedici} />
+
+      <ElencoPrenotazioni adminKey={adminKey} sedeId={sede.id} />
     </div>
   );
 }
@@ -605,4 +762,4 @@ export default function Admin() {
       </div>
     </div>
   );
-}
+                }
