@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { api } from '../api.js';
 
@@ -38,6 +37,8 @@ export default function GestisciPrenotazione({ codiceIniziale, onIndietro, onNuo
     }
   };
 
+  // Se arriviamo da un link diretto con il codice già in mano,
+  // cerchiamo subito senza aspettare che l'utente prema "Cerca".
   useEffect(() => {
     if (codiceIniziale) cerca();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -79,8 +80,10 @@ export default function GestisciPrenotazione({ codiceIniziale, onIndietro, onNuo
           <input
             id="codice"
             value={codice}
-            onChange={(e) => setCodice(e.target.value)}
-            placeholder="Es. 8f36b997-6907-4661-a43f-a7572baa33fe"
+            onChange={(e) => setCodice(e.target.value.toUpperCase())}
+            placeholder="Es. 7K9XPQ"
+            style={{ fontFamily: 'monospace', fontSize: 20, letterSpacing: '0.1em' }}
+            maxLength={6}
           />
         </div>
         <button className="submit-btn" type="submit" disabled={caricamento}>
