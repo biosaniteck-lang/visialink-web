@@ -1,24 +1,26 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api.js';
 
-export default function Home({ onVediMedici, sedeId }) {
+export default function Home({ onVediMedici, sede }) {
   const [specialita, setSpecialita] = useState([]);
 
   useEffect(() => {
     api
-      .getMedici(sedeId)
+      .getMedici(sede?.id)
       .then((medici) => {
         const uniche = [...new Set(medici.map((m) => m.specialita).filter(Boolean))];
         setSpecialita(uniche);
       })
       .catch(() => setSpecialita([]));
-  }, [sedeId]);
+  }, [sede?.id]);
 
   return (
     <>
       <section className="hero">
         <div className="container">
-          <h1>Prenota una visita in pochi minuti.</h1>
+          <h1>
+            {sede ? `Prenota una visita da ${sede.nome}.` : 'Prenota una visita in pochi minuti.'}
+          </h1>
           <p>
             Scegli il medico, l'orario che ti serve, conferma. Niente attese al
             telefono, niente andirivieni: la tua prenotazione è pronta subito.
