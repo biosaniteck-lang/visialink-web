@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import logo from './assets/logo.png';
 import Home from './pages/Home.jsx';
@@ -119,7 +118,7 @@ export default function App() {
         </div>
       </nav>
 
-      {pagina === 'home' && <Home onVediMedici={vaiMedici} sedeId={sede?.id} />}
+      {pagina === 'home' && <Home onVediMedici={vaiMedici} sede={sede} />}
 
       {pagina === 'medici' && (
         <Medici onScegliMedico={sceglimedico} onIndietro={vaiHome} sedeId={sede?.id} />
