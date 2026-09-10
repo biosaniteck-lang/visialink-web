@@ -28,9 +28,19 @@ export default function Conferma({ medico, slot, paziente, prenotazioneId, onTor
       {prenotazioneId && (
         <div className="summary-card" style={{ borderLeftColor: 'var(--brass)' }}>
           <p style={{ fontWeight: 600, marginBottom: 8 }}>Codice prenotazione</p>
-          <p style={{ wordBreak: 'break-all', fontFamily: 'monospace' }}>{prenotazioneId}</p>
+          <p
+            style={{
+              fontFamily: 'monospace',
+              fontSize: 32,
+              fontWeight: 700,
+              letterSpacing: '0.1em',
+              color: 'var(--brass-dark)',
+            }}
+          >
+            {prenotazioneId}
+          </p>
           <p style={{ color: 'var(--ink-soft)', marginTop: 8 }}>
-            Conserva questo codice: ti servirà per modificare o annullare la
+            Annota questo codice: ti servirà per modificare o annullare la
             prenotazione dalla sezione "Gestisci una prenotazione" nel sito.
           </p>
         </div>
