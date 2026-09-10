@@ -101,9 +101,21 @@ export default function App() {
             <img src={logo} alt="" className="nav-logo-icon" />
             VisiaLink
           </button>
-          <button className="nav-cta" onClick={vaiMedici}>
-            Prenota una visita
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
+            <button
+              className="back-link"
+              style={{ marginBottom: 0 }}
+              onClick={() => {
+                setCodicePrenotazioneUrl(null);
+                setPagina('gestisci');
+              }}
+            >
+              Gestisci una prenotazione
+            </button>
+            <button className="nav-cta" onClick={vaiMedici}>
+              Prenota una visita
+            </button>
+          </div>
         </div>
       </nav>
 
@@ -145,20 +157,10 @@ export default function App() {
       )}
 
       <footer className="footer">
-        <div className="container" style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-          <span>© {new Date().getFullYear()} VisiaLink</span>
-          <button
-            className="back-link"
-            style={{ marginBottom: 0 }}
-            onClick={() => {
-              setCodicePrenotazioneUrl(null);
-              setPagina('gestisci');
-            }}
-          >
-            Gestisci una prenotazione
-          </button>
+        <div className="container">
+          © {new Date().getFullYear()} VisiaLink — created by MLM ICT SERVICE
         </div>
       </footer>
     </>
   );
-      }
+}
