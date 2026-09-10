@@ -45,7 +45,7 @@ export default function Prenota({ medico, slot, onConfermata, onIndietro }) {
         note: note.trim() || null,
       });
 
-      onConfermata({ prenotazione, paziente, prenotazioneId: prenotazione.id });
+      onConfermata({ prenotazione, paziente, prenotazioneId: prenotazione.codice_breve });
     } catch (err) {
       setErrore(err.message);
     } finally {
