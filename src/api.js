@@ -33,7 +33,8 @@ function adminHeaders(adminKey) {
 export const api = {
   getMedici: (sedeId) => request(sedeId ? `/api/medici?sede_id=${sedeId}` : '/api/medici'),
   getMedico: (id) => request(`/api/medici/${id}`),
-  getSlot: (medicoId) => request(`/api/slot?medico_id=${medicoId}`),
+  getSlot: (medicoId, data) =>
+    request(data ? `/api/slot?medico_id=${medicoId}&data=${data}` : `/api/slot?medico_id=${medicoId}`),
   getSede: (identificatore) => request(`/api/sedi/${identificatore}`),
   creaPaziente: (paziente) =>
     request('/api/pazienti', {
