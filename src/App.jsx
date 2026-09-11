@@ -39,13 +39,14 @@ export default function App() {
     }
   }, [eAdmin]);
 
-  // Se il link contiene ?studio=<slug>, carichiamo i dati di quello
-  // studio (nome, telefono) e mostriamo solo i suoi medici.
-  // Es: https://visialink.it/?studio=studio-rossi
+  // Il link consegnato al cliente è del tipo https://visialink.it/studio-rossi
+  // (lo slug è il primo pezzo del percorso). Manteniamo anche il vecchio
+  // formato ?studio=studio-rossi per compatibilità con link già distribuiti.
   useEffect(() => {
     if (eAdmin) return;
-    const params = new URLSearchParams(window.location.search);
-    const studioSlug = params.get('studio');
+
+    const segmentoPercorso = window.location.pathname.replace(/^\/+/, '').split('/')[0];
+    const studioSlug = segmentoPercorso || new URLSearchParams(window.location.search).get('studio');
     if (!studioSlug) return;
 
     api
