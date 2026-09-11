@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { api } from '../api.js';
 
@@ -130,31 +129,95 @@ function FormModificaStudio({ adminKey, sede, onAggiornata }) {
   );
 }
 
+const GIORNI_SETTIMANA = [
+  { valore: 1, nome: 'Lunedì' },
+  { valore: 2, nome: 'Martedì' },
+  { valore: 3, nome: 'Mercoledì' },
+  { valore: 4, nome: 'Giovedì' },
+  { valore: 5, nome: 'Venerdì' },
+  { valore: 6, nome: 'Sabato' },
+  { valore: 0, nome: 'Domenica' },
+];
+
+function RigaGiornoOrario({ giorno, valore, onCambia }) {
+  const attivo = !!valore;
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 12,
+        padding: '10px 0',
+        borderBottom: '1px solid var(--porcelain-line)',
+        flexWrap: 'wrap',
+      }}
+    >
+      <label style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 110, fontSize: 14 }}>
+        <input
+          type="checkbox"
+          checked={attivo}
+          onChange={(e) =>
+            onCambia(e.target.checked ? { ora_inizio: '09:00', ora_fine: '13:00' } : null)
+          }
+        />
+        {giorno.nome}
+      </label>
+
+      {attivo && (
+        <>
+          <input
+            type="time"
+            value={valore.ora_inizio}
+            onChange={(e) => onCambia({ ...valore, ora_inizio: e.target.value })}
+            style={{
+              width: 110,
+              flexShrink: 0,
+              padding: '6px 8px',
+              border: '1px solid var(--porcelain-line)',
+              borderRadius: 3,
+              fontSize: 14,
+            }}
+          />
+          <span style={{ color: 'var(--ink-soft)' }}>–</span>
+          <input
+            type="time"
+            value={valore.ora_fine}
+            onChange={(e) => onCambia({ ...valore, ora_fine: e.target.value })}
+            style={{
+              width: 110,
+              flexShrink: 0,
+              padding: '6px 8px',
+              border: '1px solid var(--porcelain-line)',
+              borderRadius: 3,
+              fontSize: 14,
+            }}
+          />
+        </>
+      )}
+    </div>
+  );
+}
+
 function FormGeneraSlot({ adminKey, medicoId, onGenerati }) {
   const [data, setData] = useState('');
   const [dataFine, setDataFine] = useState('');
-  const [giorniSettimana, setGiorniSettimana] = useState([1, 2, 3, 4, 5]); // lun-ven di default
-  const [oraInizio, setOraInizio] = useState('09:00');
-  const [oraFine, setOraFine] = useState('13:00');
   const [durata, setDurata] = useState(30);
+  const [orariPerGiorno, setOrariPerGiorno] = useState({
+    1: { ora_inizio: '09:00', ora_fine: '13:00' },
+    2: { ora_inizio: '09:00', ora_fine: '13:00' },
+    3: { ora_inizio: '09:00', ora_fine: '13:00' },
+    4: { ora_inizio: '09:00', ora_fine: '13:00' },
+    5: { ora_inizio: '09:00', ora_fine: '13:00' },
+    6: null,
+    0: null,
+  });
   const [invio, setInvio] = useState(false);
   const [errore, setErrore] = useState(null);
   const [esito, setEsito] = useState(null);
 
-  const giorniLabel = [
-    { valore: 1, sigla: 'Lun' },
-    { valore: 2, sigla: 'Mar' },
-    { valore: 3, sigla: 'Mer' },
-    { valore: 4, sigla: 'Gio' },
-    { valore: 5, sigla: 'Ven' },
-    { valore: 6, sigla: 'Sab' },
-    { valore: 0, sigla: 'Dom' },
-  ];
-
-  const toggleGiorno = (valore) => {
-    setGiorniSettimana((prev) =>
-      prev.includes(valore) ? prev.filter((g) => g !== valore) : [...prev, valore]
-    );
+  const cambiaGiorno = (valore, nuovoOrario) => {
+    setOrariPerGiorno((prev) => ({ ...prev, [valore]: nuovoOrario }));
   };
 
   const handleSubmit = async (e) => {
@@ -167,6 +230,12 @@ function FormGeneraSlot({ adminKey, medicoId, onGenerati }) {
       return;
     }
 
+    const almeUnGiornoAttivo = Object.values(orariPerGiorno).some(Boolean);
+    if (!almeUnGiornoAttivo) {
+      setErrore('Attiva almeno un giorno della settimana.');
+      return;
+    }
+
     setInvio(true);
     try {
       const risultato = await api.generaSlotBulk(
@@ -174,16 +243,12 @@ function FormGeneraSlot({ adminKey, medicoId, onGenerati }) {
           medico_id: medicoId,
           data,
           data_fine: dataFine || undefined,
-          giorni_settimana: dataFine ? giorniSettimana : undefined,
-          ora_inizio: oraInizio,
-          ora_fine: oraFine,
           durata_minuti: Number(durata) || 30,
+          orari_per_giorno: orariPerGiorno,
         },
         adminKey
       );
-      setEsito(
-        `${risultato.slot_creati} slot creati su ${risultato.giorni_generati} giorno/i.`
-      );
+      setEsito(`${risultato.slot_creati} slot creati su ${risultato.giorni_generati} giorno/i.`);
       onGenerati?.();
     } catch (err) {
       setErrore(err.message);
@@ -203,51 +268,31 @@ function FormGeneraSlot({ adminKey, medicoId, onGenerati }) {
           <input type="date" value={data} onChange={(e) => setData(e.target.value)} />
         </div>
         <div className="form-field" style={{ flex: 1 }}>
-          <label>Al (facoltativo)</label>
+          <label>Al (facoltativo, per ripetere su più settimane)</label>
           <input type="date" value={dataFine} onChange={(e) => setDataFine(e.target.value)} />
         </div>
       </div>
 
-      {dataFine && (
-        <div className="form-field">
-          <label>Giorni della settimana</label>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            {giorniLabel.map((g) => (
-              <button
-                type="button"
-                key={g.valore}
-                onClick={() => toggleGiorno(g.valore)}
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: 20,
-                  border: '1px solid var(--porcelain-line)',
-                  background: giorniSettimana.includes(g.valore) ? 'var(--ink)' : '#fff',
-                  color: giorniSettimana.includes(g.valore) ? 'var(--porcelain)' : 'var(--ink)',
-                  fontSize: 13,
-                  cursor: 'pointer',
-                }}
-              >
-                {g.sigla}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div style={{ display: 'flex', gap: 12 }}>
-        <div className="form-field" style={{ flex: 1 }}>
-          <label>Dalle</label>
-          <input type="time" value={oraInizio} onChange={(e) => setOraInizio(e.target.value)} />
-        </div>
-        <div className="form-field" style={{ flex: 1 }}>
-          <label>Alle</label>
-          <input type="time" value={oraFine} onChange={(e) => setOraFine(e.target.value)} />
-        </div>
-      </div>
       <div className="form-field">
+        <label>Orario per ogni giorno della settimana</label>
+        <p style={{ color: 'var(--ink-soft)', fontSize: 13, marginTop: -4, marginBottom: 8 }}>
+          Spunta i giorni in cui il medico riceve e imposta l'orario di ciascuno.
+        </p>
+        {GIORNI_SETTIMANA.map((g) => (
+          <RigaGiornoOrario
+            key={g.valore}
+            giorno={g}
+            valore={orariPerGiorno[g.valore]}
+            onCambia={(nuovoOrario) => cambiaGiorno(g.valore, nuovoOrario)}
+          />
+        ))}
+      </div>
+
+      <div className="form-field" style={{ maxWidth: 220 }}>
         <label>Durata di ogni visita (minuti)</label>
         <input type="number" value={durata} onChange={(e) => setDurata(e.target.value)} />
       </div>
+
       <button className="submit-btn" type="submit" disabled={invio}>
         {invio ? 'Generazione…' : 'Genera slot'}
       </button>
@@ -818,4 +863,4 @@ export default function Admin() {
       </div>
     </div>
   );
-}
+        }
