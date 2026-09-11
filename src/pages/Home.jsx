@@ -22,8 +22,8 @@ export default function Home({ onVediMedici, sede }) {
             {sede ? `Prenota una visita da ${sede.nome}.` : 'Prenota una visita in pochi minuti.'}
           </h1>
           <p>
-            Scegli il medico, l'orario che ti serve, conferma. Niente attese al
-            telefono, niente andirivieni: la tua prenotazione è pronta subito.
+            Scegli il medico, l'orario che ti serve, conferma. Niente attese
+            al telefono: la tua prenotazione è pronta subito.
           </p>
           <button className="hero-cta" onClick={onVediMedici}>
             Vedi i medici disponibili
