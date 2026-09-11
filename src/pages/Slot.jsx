@@ -14,14 +14,16 @@ export default function Slot({ medico, onScegliSlot, onIndietro }) {
   const [slot, setSlot] = useState([]);
   const [caricamento, setCaricamento] = useState(true);
   const [errore, setErrore] = useState(null);
+  const [dataFiltro, setDataFiltro] = useState('');
 
   useEffect(() => {
+    setCaricamento(true);
     api
-      .getSlot(medico.id)
+      .getSlot(medico.id, dataFiltro || undefined)
       .then(setSlot)
       .catch((err) => setErrore(err.message))
       .finally(() => setCaricamento(false));
-  }, [medico.id]);
+  }, [medico.id, dataFiltro]);
 
   const slotPerGiorno = slot.reduce((acc, s) => {
     (acc[s.data] = acc[s.data] || []).push(s);
@@ -36,12 +38,31 @@ export default function Slot({ medico, onScegliSlot, onIndietro }) {
       <h2>{medico.nome}</h2>
       {medico.specialita && <p className="ledger-meta" style={{ marginTop: -20, marginBottom: 32 }}>{medico.specialita}</p>}
 
+      <div className="form-field" style={{ maxWidth: 240 }}>
+        <label htmlFor="data-filtro">Vai a una data specifica</label>
+        <input
+          id="data-filtro"
+          type="date"
+          value={dataFiltro}
+          onChange={(e) => setDataFiltro(e.target.value)}
+        />
+      </div>
+      {dataFiltro && (
+        <button className="back-link" onClick={() => setDataFiltro('')}>
+          Mostra tutte le date disponibili
+        </button>
+      )}
+
       {errore && <div className="error-box">Non è stato possibile caricare gli orari: {errore}</div>}
 
       {caricamento && <p className="ledger-empty">Caricamento orari…</p>}
 
       {!caricamento && slot.length === 0 && !errore && (
-        <p className="ledger-empty">Nessuno slot libero al momento per questo medico.</p>
+        <p className="ledger-empty">
+          {dataFiltro
+            ? 'Nessuno slot libero per questa data. Prova con un altro giorno.'
+            : 'Nessuno slot libero al momento per questo medico.'}
+        </p>
       )}
 
       {Object.entries(slotPerGiorno).map(([data, slotGiorno]) => (
