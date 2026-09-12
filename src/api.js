@@ -53,6 +53,7 @@ export const api = {
     request(`/api/prenotazioni?sede_id=${sedeId}`, { headers: adminHeaders(adminKey) }),
 
   // ---- Amministrazione (richiedono adminKey) ----
+  chiSonoIo: (adminKey) => request('/api/sedi/me', { headers: adminHeaders(adminKey) }),
   listaSedi: (adminKey) => request('/api/sedi', { headers: adminHeaders(adminKey) }),
   creaSede: (sede, adminKey) =>
     request('/api/sedi', {
