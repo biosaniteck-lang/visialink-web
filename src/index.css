@@ -435,3 +435,36 @@ button {
   color: var(--ink-soft);
   font-size: 14px;
 }
+
+/* ---------------------------------------------------------- */
+/* Stampa elenco prenotazioni                                    */
+/* ---------------------------------------------------------- */
+.solo-stampa {
+  display: none;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #area-stampa-prenotazioni,
+  #area-stampa-prenotazioni * {
+    visibility: visible;
+  }
+
+  #area-stampa-prenotazioni {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+
+  .solo-stampa {
+    display: block;
+  }
+
+  .non-stampare {
+    display: none !important;
+  }
+}
