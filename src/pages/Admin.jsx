@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { api } from '../api.js';
 
@@ -746,6 +745,16 @@ function ElencoPrenotazioni({ adminKey, sedeId }) {
                 <span className="ledger-meta">
                   {p.tipo === 'privata' ? 'Privata' : 'SSN'} · {p.codice_breve}
                 </span>
+                {(paziente?.email || paziente?.telefono) && (
+                  <span className="ledger-meta">
+                    {[paziente?.email, paziente?.telefono].filter(Boolean).join(' · ')}
+                  </span>
+                )}
+                {p.note && (
+                  <span className="ledger-meta" style={{ fontStyle: 'italic' }}>
+                    Note: {p.note}
+                  </span>
+                )}
               </div>
               <span className="ledger-meta">
                 {p.stato === 'confermata' ? 'Confermata' : p.stato === 'cancellata' ? 'Annullata' : p.stato}
