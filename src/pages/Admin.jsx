@@ -692,10 +692,11 @@ function FormNuovoMedico({ adminKey, sede, onCreato }) {
   );
 }
 
-function ElencoPrenotazioni({ adminKey, sedeId }) {
+function ElencoPrenotazioni({ adminKey, sedeId, sedeNome, medici }) {
   const [prenotazioni, setPrenotazioni] = useState([]);
   const [caricamento, setCaricamento] = useState(true);
   const [errore, setErrore] = useState(null);
+  const [filtroMedicoId, setFiltroMedicoId] = useState('');
 
   const carica = () => {
     setCaricamento(true);
@@ -718,59 +719,109 @@ function ElencoPrenotazioni({ adminKey, sedeId }) {
     }
   };
 
+  const prenotazioniFiltrate = filtroMedicoId
+    ? prenotazioni.filter((p) => p.slot_disponibilita?.medici?.id === filtroMedicoId)
+    : prenotazioni;
+
+  const medicoFiltrato = medici.find((m) => m.id === filtroMedicoId);
+  const dataStampa = new Date().toLocaleDateString('it-IT', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+
   return (
     <>
       <h2 style={{ fontSize: 22, marginTop: 40 }}>Prenotazioni</h2>
 
-      {errore && <div className="error-box">{errore}</div>}
-      {caricamento && <p className="ledger-empty">Caricamento…</p>}
-      {!caricamento && prenotazioni.length === 0 && !errore && (
-        <p className="ledger-empty">Nessuna prenotazione ancora per questo studio.</p>
-      )}
+      <div className="non-stampare" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end', marginBottom: 16 }}>
+        <div className="form-field" style={{ marginBottom: 0, minWidth: 220 }}>
+          <label htmlFor="filtro-medico">Filtra per medico</label>
+          <select
+            id="filtro-medico"
+            value={filtroMedicoId}
+            onChange={(e) => setFiltroMedicoId(e.target.value)}
+          >
+            <option value="">Tutti i medici</option>
+            {medici.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.nome}
+              </option>
+            ))}
+          </select>
+        </div>
+        <button
+          type="button"
+          className="ledger-action"
+          onClick={() => window.print()}
+          disabled={prenotazioniFiltrate.length === 0}
+        >
+          Stampa elenco
+        </button>
+      </div>
 
-      <div className="ledger">
-        {prenotazioni.map((p) => {
-          const slot = p.slot_disponibilita;
-          const medico = slot?.medici;
-          const paziente = p.pazienti;
-          return (
-            <div className="ledger-row" key={p.id} style={{ flexWrap: 'wrap' }}>
-              <div className="ledger-main">
-                <span className="ledger-name">
-                  {paziente?.nome} {paziente?.cognome}
-                </span>
-                <span className="ledger-meta">
-                  {medico?.nome} — {slot?.data} {slot?.ora_inizio?.slice(0, 5)}
-                </span>
-                <span className="ledger-meta">
-                  {p.tipo === 'privata' ? 'Privata' : 'SSN'} · {p.codice_breve}
-                </span>
-                {(paziente?.email || paziente?.telefono) && (
+      <div id="area-stampa-prenotazioni">
+        <div className="solo-stampa" style={{ marginBottom: 20 }}>
+          <p style={{ fontWeight: 600, fontSize: 18 }}>{sedeNome} — Elenco prenotazioni</p>
+          <p style={{ color: 'var(--ink-soft)' }}>
+            {medicoFiltrato ? `Medico: ${medicoFiltrato.nome}` : 'Tutti i medici'} · Stampato il {dataStampa}
+          </p>
+        </div>
+
+        {errore && <div className="error-box">{errore}</div>}
+        {caricamento && <p className="ledger-empty">Caricamento…</p>}
+        {!caricamento && prenotazioniFiltrate.length === 0 && !errore && (
+          <p className="ledger-empty">
+            {filtroMedicoId
+              ? 'Nessuna prenotazione per questo medico.'
+              : 'Nessuna prenotazione ancora per questo studio.'}
+          </p>
+        )}
+
+        <div className="ledger">
+          {prenotazioniFiltrate.map((p) => {
+            const slot = p.slot_disponibilita;
+            const medico = slot?.medici;
+            const paziente = p.pazienti;
+            return (
+              <div className="ledger-row" key={p.id} style={{ flexWrap: 'wrap' }}>
+                <div className="ledger-main">
+                  <span className="ledger-name">
+                    {paziente?.nome} {paziente?.cognome}
+                  </span>
                   <span className="ledger-meta">
-                    {[paziente?.email, paziente?.telefono].filter(Boolean).join(' · ')}
+                    {medico?.nome} — {slot?.data} {slot?.ora_inizio?.slice(0, 5)}
                   </span>
-                )}
-                {p.note && (
-                  <span className="ledger-meta" style={{ fontStyle: 'italic' }}>
-                    Note: {p.note}
+                  <span className="ledger-meta">
+                    {p.tipo === 'privata' ? 'Privata' : 'SSN'} · {p.codice_breve}
                   </span>
+                  {(paziente?.email || paziente?.telefono) && (
+                    <span className="ledger-meta">
+                      {[paziente?.email, paziente?.telefono].filter(Boolean).join(' · ')}
+                    </span>
+                  )}
+                  {p.note && (
+                    <span className="ledger-meta" style={{ fontStyle: 'italic' }}>
+                      Note: {p.note}
+                    </span>
+                  )}
+                </div>
+                <span className="ledger-meta">
+                  {p.stato === 'confermata' ? 'Confermata' : p.stato === 'cancellata' ? 'Annullata' : p.stato}
+                </span>
+                {p.stato === 'confermata' && (
+                  <button
+                    className="ledger-action non-stampare"
+                    style={{ borderColor: 'var(--rust)', color: 'var(--rust)' }}
+                    onClick={() => annulla(p.id)}
+                  >
+                    Annulla
+                  </button>
                 )}
               </div>
-              <span className="ledger-meta">
-                {p.stato === 'confermata' ? 'Confermata' : p.stato === 'cancellata' ? 'Annullata' : p.stato}
-              </span>
-              {p.stato === 'confermata' && (
-                <button
-                  className="ledger-action"
-                  style={{ borderColor: 'var(--rust)', color: 'var(--rust)' }}
-                  onClick={() => annulla(p.id)}
-                >
-                  Annulla
-                </button>
-              )}
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     </>
   );
@@ -838,7 +889,7 @@ function DettaglioStudio({ adminKey, sede, onIndietro, onSedeAggiornata }) {
 
       <FormNuovoMedico adminKey={adminKey} sede={sede} onCreato={caricaMedici} />
 
-      <ElencoPrenotazioni adminKey={adminKey} sedeId={sede.id} />
+      <ElencoPrenotazioni adminKey={adminKey} sedeId={sede.id} sedeNome={sede.nome} medici={medici} />
     </div>
   );
 }
