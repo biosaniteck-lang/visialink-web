@@ -1,7 +1,18 @@
-  import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { api } from '../api.js';
 
 const API_URL_BASE = import.meta.env.VITE_API_URL || 'https://visialink-backend.onrender.com';
+
+// Rende uno slug sicuro per un URL: minuscolo, senza spazi né simboli.
+// Si applica solo al momento di salvare (non a ogni tasto premuto),
+// così l'admin può scrivere/incollare quello che vuole nel frattempo
+// senza vedersi "correggere" il testo mentre digita.
+function normalizzaSlug(testo) {
+  return (testo || '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '');
+}
 
 function BottoneBackup({ adminKey }) {
   const [scaricamento, setScaricamento] = useState(false);
@@ -73,7 +84,8 @@ function FormModificaStudio({ adminKey, sede, onAggiornata }) {
       setErrore('Il nome dello studio è obbligatorio.');
       return;
     }
-    if (!slug.trim()) {
+    const slugPulito = normalizzaSlug(slug);
+    if (!slugPulito) {
       setErrore('L\'indirizzo del link non può essere vuoto.');
       return;
     }
@@ -86,11 +98,12 @@ function FormModificaStudio({ adminKey, sede, onAggiornata }) {
           nome: nome.trim(),
           telefono: telefono.trim() || null,
           indirizzo: indirizzo.trim() || null,
-          slug: slug.trim(),
+          slug: slugPulito,
           email: email.trim() || null,
         },
         adminKey
       );
+      setSlug(slugPulito);
       onAggiornata(sedeAggiornata);
       setSalvato(true);
     } catch (err) {
@@ -549,15 +562,9 @@ function FormNuovoStudio({ adminKey, onCreato }) {
   const [errore, setErrore] = useState(null);
   const [studioCreato, setStudioCreato] = useState(null);
 
-  const generaSlug = (testo) =>
-    testo
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9]+/g, '');
-
   const handleNomeChange = (valore) => {
     setNome(valore);
-    setSlug(generaSlug(valore));
+    setSlug(normalizzaSlug(valore));
   };
 
   const handleSubmit = async (e) => {
@@ -565,7 +572,8 @@ function FormNuovoStudio({ adminKey, onCreato }) {
     setErrore(null);
     setStudioCreato(null);
 
-    if (!nome.trim() || !slug.trim()) {
+    const slugPulito = normalizzaSlug(slug);
+    if (!nome.trim() || !slugPulito) {
       setErrore('Nome e slug sono obbligatori.');
       return;
     }
@@ -577,7 +585,7 @@ function FormNuovoStudio({ adminKey, onCreato }) {
           nome: nome.trim(),
           telefono: telefono.trim() || null,
           indirizzo: indirizzo.trim() || null,
-          slug: slug.trim(),
+          slug: slugPulito,
           email: email.trim() || null,
         },
         adminKey
