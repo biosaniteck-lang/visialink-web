@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+  import { useEffect, useState } from 'react';
 import { api } from '../api.js';
 
 export default function Medici({ onScegliMedico, onIndietro, sedeId }) {
@@ -35,6 +35,11 @@ export default function Medici({ onScegliMedico, onIndietro, sedeId }) {
             <div className="ledger-main">
               <span className="ledger-name">{medico.nome}</span>
               {medico.specialita && <span className="ledger-meta">{medico.specialita}</span>}
+              {(medico.telefono || medico.email) && (
+                <span className="ledger-meta">
+                  {[medico.telefono, medico.email].filter(Boolean).join(' · ')}
+                </span>
+              )}
             </div>
             <button className="ledger-action" onClick={() => onScegliMedico(medico)}>
               Vedi disponibilità
@@ -44,4 +49,4 @@ export default function Medici({ onScegliMedico, onIndietro, sedeId }) {
       </div>
     </div>
   );
-}
+}           
