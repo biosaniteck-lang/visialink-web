@@ -90,8 +90,14 @@ export default function App() {
       {sede && (
         <div className="topbar">
           <div className="container topbar-inner">
-            <span>{sede.nome}</span>
-            {sede.telefono && <a href={`tel:${sede.telefono}`}>{sede.telefono}</a>}
+            <div className="topbar-info">
+              <span className="topbar-nome">{sede.nome}</span>
+              {sede.indirizzo && <span>{sede.indirizzo}</span>}
+            </div>
+            <div className="topbar-contatti">
+              {sede.telefono && <a href={`tel:${sede.telefono}`}>{sede.telefono}</a>}
+              {sede.email && <a href={`mailto:${sede.email}`}>{sede.email}</a>}
+            </div>
           </div>
         </div>
       )}
