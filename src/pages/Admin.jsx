@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+  import { useEffect, useState } from 'react';
 import { api } from '../api.js';
 
 const API_URL_BASE = import.meta.env.VITE_API_URL || 'https://visialink-backend.onrender.com';
@@ -55,6 +55,7 @@ function BottoneBackup({ adminKey }) {
 function FormModificaStudio({ adminKey, sede, onAggiornata }) {
   const [nome, setNome] = useState(sede.nome);
   const [telefono, setTelefono] = useState(sede.telefono || '');
+  const [email, setEmail] = useState(sede.email || '');
   const [indirizzo, setIndirizzo] = useState(sede.indirizzo || '');
   const [slug, setSlug] = useState(sede.slug || '');
   const [invio, setInvio] = useState(false);
@@ -86,6 +87,7 @@ function FormModificaStudio({ adminKey, sede, onAggiornata }) {
           telefono: telefono.trim() || null,
           indirizzo: indirizzo.trim() || null,
           slug: slug.trim(),
+          email: email.trim() || null,
         },
         adminKey
       );
@@ -142,6 +144,16 @@ function FormModificaStudio({ adminKey, sede, onAggiornata }) {
             id="telefono-studio-edit"
             value={telefono}
             onChange={(e) => setTelefono(e.target.value)}
+          />
+        </div>
+
+        <div className="form-field">
+          <label htmlFor="email-studio-edit">Email di contatto</label>
+          <input
+            id="email-studio-edit"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
         </div>
 
@@ -369,6 +381,8 @@ function RigaMedico({ adminKey, medico, onAggiornato, onEliminato }) {
   const [mostraSlot, setMostraSlot] = useState(false);
   const [nome, setNome] = useState(medico.nome);
   const [specialita, setSpecialita] = useState(medico.specialita || '');
+  const [telefono, setTelefono] = useState(medico.telefono || '');
+  const [email, setEmail] = useState(medico.email || '');
   const [durata, setDurata] = useState(medico.durata_visita_default);
   const [invio, setInvio] = useState(false);
   const [errore, setErrore] = useState(null);
@@ -382,6 +396,8 @@ function RigaMedico({ adminKey, medico, onAggiornato, onEliminato }) {
         {
           nome: nome.trim(),
           specialita: specialita.trim() || null,
+          telefono: telefono.trim() || null,
+          email: email.trim() || null,
           durata_visita_default: Number(durata) || 30,
         },
         adminKey
@@ -416,6 +432,11 @@ function RigaMedico({ adminKey, medico, onAggiornato, onEliminato }) {
           <div className="ledger-main">
             <span className="ledger-name">{medico.nome}</span>
             {medico.specialita && <span className="ledger-meta">{medico.specialita}</span>}
+            {(medico.telefono || medico.email) && (
+              <span className="ledger-meta">
+                {[medico.telefono, medico.email].filter(Boolean).join(' · ')}
+              </span>
+            )}
             {errore && <span style={{ color: 'var(--rust)', fontSize: 13 }}>{errore}</span>}
           </div>
           <span className="ledger-meta">{medico.durata_visita_default} min</span>
@@ -455,6 +476,14 @@ function RigaMedico({ adminKey, medico, onAggiornato, onEliminato }) {
       <div className="form-field">
         <label>Specialità</label>
         <input value={specialita} onChange={(e) => setSpecialita(e.target.value)} />
+      </div>
+      <div className="form-field">
+        <label>Telefono</label>
+        <input value={telefono} onChange={(e) => setTelefono(e.target.value)} />
+      </div>
+      <div className="form-field">
+        <label>Email</label>
+        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
       </div>
       <div className="form-field">
         <label>Durata visita (minuti)</label>
@@ -513,6 +542,7 @@ function SchermataAccesso({ onAccesso }) {
 function FormNuovoStudio({ adminKey, onCreato }) {
   const [nome, setNome] = useState('');
   const [telefono, setTelefono] = useState('');
+  const [email, setEmail] = useState('');
   const [indirizzo, setIndirizzo] = useState('');
   const [slug, setSlug] = useState('');
   const [invio, setInvio] = useState(false);
@@ -548,11 +578,13 @@ function FormNuovoStudio({ adminKey, onCreato }) {
           telefono: telefono.trim() || null,
           indirizzo: indirizzo.trim() || null,
           slug: slug.trim(),
+          email: email.trim() || null,
         },
         adminKey
       );
       setNome('');
       setTelefono('');
+      setEmail('');
       setIndirizzo('');
       setSlug('');
       setStudioCreato(sede);
@@ -597,6 +629,17 @@ function FormNuovoStudio({ adminKey, onCreato }) {
         </div>
 
         <div className="form-field">
+          <label htmlFor="email-studio">Email di contatto</label>
+          <input
+            id="email-studio"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="info@studiorossi.it"
+          />
+        </div>
+
+        <div className="form-field">
           <label htmlFor="indirizzo-studio">Indirizzo (facoltativo)</label>
           <input id="indirizzo-studio" value={indirizzo} onChange={(e) => setIndirizzo(e.target.value)} />
         </div>
@@ -626,6 +669,8 @@ function FormNuovoStudio({ adminKey, onCreato }) {
 function FormNuovoMedico({ adminKey, sede, onCreato }) {
   const [nome, setNome] = useState('');
   const [specialita, setSpecialita] = useState('');
+  const [telefono, setTelefono] = useState('');
+  const [email, setEmail] = useState('');
   const [durata, setDurata] = useState(30);
   const [invio, setInvio] = useState(false);
   const [errore, setErrore] = useState(null);
@@ -645,6 +690,8 @@ function FormNuovoMedico({ adminKey, sede, onCreato }) {
         {
           nome: nome.trim(),
           specialita: specialita.trim() || null,
+          telefono: telefono.trim() || null,
+          email: email.trim() || null,
           durata_visita_default: Number(durata) || 30,
           sede_id: sede.id,
         },
@@ -652,6 +699,8 @@ function FormNuovoMedico({ adminKey, sede, onCreato }) {
       );
       setNome('');
       setSpecialita('');
+      setTelefono('');
+      setEmail('');
       setDurata(30);
       onCreato(medico);
     } catch (err) {
@@ -682,6 +731,27 @@ function FormNuovoMedico({ adminKey, sede, onCreato }) {
           value={specialita}
           onChange={(e) => setSpecialita(e.target.value)}
           placeholder="Cardiologia"
+        />
+      </div>
+
+      <div className="form-field">
+        <label htmlFor="telefono-medico">Telefono</label>
+        <input
+          id="telefono-medico"
+          value={telefono}
+          onChange={(e) => setTelefono(e.target.value)}
+          placeholder="+39 02 1234567"
+        />
+      </div>
+
+      <div className="form-field">
+        <label htmlFor="email-medico">Email</label>
+        <input
+          id="email-medico"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="dott.rossi@studiorossi.it"
         />
       </div>
 
@@ -1187,4 +1257,4 @@ export default function Admin() {
       </div>
     </div>
   );
-}       
+}
