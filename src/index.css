@@ -55,7 +55,7 @@ button {
 }
 
 /* ---------------------------------------------------------- */
-/* Topbar — nome e telefono dello studio cliente                */
+/* Topbar — riferimenti completi dello studio cliente            */
 /* ---------------------------------------------------------- */
 .topbar {
   background: var(--ink);
@@ -67,7 +67,22 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 24px;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  padding: 10px 24px;
+}
+
+.topbar-info,
+.topbar-contatti {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.topbar-nome {
+  font-weight: 600;
+  color: var(--porcelain);
 }
 
 .topbar-inner a {
@@ -78,6 +93,14 @@ button {
 
 .topbar-inner a:hover {
   color: var(--brass);
+}
+
+@media (max-width: 640px) {
+  .topbar-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
 }
 
 /* ---------------------------------------------------------- */
