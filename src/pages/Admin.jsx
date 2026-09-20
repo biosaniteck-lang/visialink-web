@@ -785,6 +785,7 @@ function ElencoPrenotazioni({ adminKey, sedeId, sedeNome, medici }) {
   const [caricamento, setCaricamento] = useState(true);
   const [errore, setErrore] = useState(null);
   const [filtroMedicoId, setFiltroMedicoId] = useState('');
+  const [eliminandoMassa, setEliminandoMassa] = useState(false);
 
   const carica = () => {
     setCaricamento(true);
@@ -807,9 +808,40 @@ function ElencoPrenotazioni({ adminKey, sedeId, sedeNome, medici }) {
     }
   };
 
+  const eliminaDefinitivamente = async (id) => {
+    if (!window.confirm('Eliminare definitivamente questa prenotazione? L\'azione non è reversibile.')) return;
+    try {
+      await api.eliminaPrenotazione(id, adminKey);
+      carica();
+    } catch (err) {
+      setErrore(err.message);
+    }
+  };
+
+  const eliminaTutteAnnullate = async () => {
+    if (
+      !window.confirm(
+        `Eliminare definitivamente tutte le ${numeroAnnullate} prenotazioni annullate di questo studio? L'azione non è reversibile.`
+      )
+    )
+      return;
+
+    setEliminandoMassa(true);
+    try {
+      await api.eliminaPrenotazioniAnnullate(sedeId, adminKey);
+      carica();
+    } catch (err) {
+      setErrore(err.message);
+    } finally {
+      setEliminandoMassa(false);
+    }
+  };
+
   const prenotazioniFiltrate = filtroMedicoId
     ? prenotazioni.filter((p) => p.slot_disponibilita?.medici?.id === filtroMedicoId)
     : prenotazioni;
+
+  const numeroAnnullate = prenotazioni.filter((p) => p.stato === 'cancellata').length;
 
   const medicoFiltrato = medici.find((m) => m.id === filtroMedicoId);
   const dataStampa = new Date().toLocaleDateString('it-IT', {
@@ -845,6 +877,15 @@ function ElencoPrenotazioni({ adminKey, sedeId, sedeNome, medici }) {
           disabled={prenotazioniFiltrate.length === 0}
         >
           Stampa elenco
+        </button>
+        <button
+          type="button"
+          className="ledger-action"
+          style={{ borderColor: 'var(--rust)', color: 'var(--rust)' }}
+          onClick={eliminaTutteAnnullate}
+          disabled={numeroAnnullate === 0 || eliminandoMassa}
+        >
+          {eliminandoMassa ? 'Eliminazione…' : `Elimina tutte le annullate (${numeroAnnullate})`}
         </button>
       </div>
 
@@ -897,15 +938,26 @@ function ElencoPrenotazioni({ adminKey, sedeId, sedeNome, medici }) {
                 <span className="ledger-meta">
                   {p.stato === 'confermata' ? 'Confermata' : p.stato === 'cancellata' ? 'Annullata' : p.stato}
                 </span>
-                {p.stato === 'confermata' && (
-                  <button
-                    className="ledger-action non-stampare"
-                    style={{ borderColor: 'var(--rust)', color: 'var(--rust)' }}
-                    onClick={() => annulla(p.id)}
-                  >
-                    Annulla
-                  </button>
-                )}
+                <div className="non-stampare" style={{ display: 'flex', gap: 8 }}>
+                  {p.stato === 'confermata' && (
+                    <button
+                      className="ledger-action"
+                      style={{ borderColor: 'var(--rust)', color: 'var(--rust)' }}
+                      onClick={() => annulla(p.id)}
+                    >
+                      Annulla
+                    </button>
+                  )}
+                  {p.stato === 'cancellata' && (
+                    <button
+                      className="ledger-action"
+                      style={{ borderColor: 'var(--rust)', color: 'var(--rust)' }}
+                      onClick={() => eliminaDefinitivamente(p.id)}
+                    >
+                      Elimina
+                    </button>
+                  )}
+                </div>
               </div>
             );
           })}
@@ -919,11 +971,14 @@ function ElencoPrenotazioni({ adminKey, sedeId, sedeNome, medici }) {
 // studio: una riga per persona (non per prenotazione), con quante
 // volte ha prenotato e la data dell'ultima visita. Non è una nuova
 // chiamata al backend — riusa gli stessi dati già scaricati per
-// l'elenco prenotazioni.
+// l'elenco prenotazioni. Le prenotazioni annullate non contano nel
+// totale (contano solo le visite effettivamente confermate).
 function raggruppaPazienti(prenotazioni) {
   const mappa = new Map();
 
   for (const p of prenotazioni) {
+    if (p.stato === 'cancellata') continue;
+
     const pz = p.pazienti;
     if (!pz) continue;
 
@@ -996,8 +1051,9 @@ function AnagraficaPazienti({ adminKey, sedeId, sedeNome }) {
       </div>
       <p style={{ color: 'var(--ink-soft)', fontSize: 14, marginTop: 8, marginBottom: 16 }}>
         Un elenco unico delle persone che hanno prenotato con questo
-        studio, aggiornato automaticamente a ogni prenotazione — pronto
-        da esportare per email, newsletter o messaggi WhatsApp.
+        studio (le prenotazioni annullate non contano), aggiornato
+        automaticamente a ogni prenotazione — pronto da esportare per
+        email, newsletter o messaggi WhatsApp.
       </p>
 
       {errore && <div className="error-box">{errore}</div>}
