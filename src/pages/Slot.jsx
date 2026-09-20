@@ -10,6 +10,17 @@ function formattaData(dataIso) {
   });
 }
 
+// Data di oggi nel formato richiesto dall'input type="date" (YYYY-MM-DD),
+// secondo l'orologio del dispositivo del paziente: impedisce di
+// selezionare dal calendario un giorno già passato.
+function dataOdierna() {
+  const d = new Date();
+  const anno = d.getFullYear();
+  const mese = String(d.getMonth() + 1).padStart(2, '0');
+  const giorno = String(d.getDate()).padStart(2, '0');
+  return `${anno}-${mese}-${giorno}`;
+}
+
 export default function Slot({ medico, onScegliSlot, onIndietro }) {
   const [slot, setSlot] = useState([]);
   const [caricamento, setCaricamento] = useState(true);
@@ -43,6 +54,7 @@ export default function Slot({ medico, onScegliSlot, onIndietro }) {
         <input
           id="data-filtro"
           type="date"
+          min={dataOdierna()}
           value={dataFiltro}
           onChange={(e) => setDataFiltro(e.target.value)}
         />
