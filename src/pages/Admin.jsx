@@ -780,11 +780,73 @@ function FormNuovoMedico({ adminKey, sede, onCreato }) {
   );
 }
 
+// "2026-09" -> "Settembre 2026"
+function formattaMese(annoMese) {
+  const [anno, mese] = annoMese.split('-');
+  const nome = new Date(`${annoMese}-01T00:00:00`).toLocaleDateString('it-IT', { month: 'long' });
+  return `${nome.charAt(0).toUpperCase()}${nome.slice(1)} ${anno}`;
+}
+
+// Data di N giorni fa nel formato YYYY-MM-DD, per il filtro "recenti".
+function giorniFa(n) {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  return d.toISOString().slice(0, 10);
+}
+
+function esportaPrenotazioniCsv(prenotazioni, nomeFile) {
+  const intestazione = [
+    'Paziente',
+    'Email',
+    'Telefono',
+    'Medico',
+    'Data',
+    'Ora',
+    'Tipo visita',
+    'Stato',
+    'Codice breve',
+    'Note',
+  ];
+  const escapeCsv = (valore) => `"${String(valore ?? '').replace(/"/g, '""')}"`;
+
+  const righe = prenotazioni.map((p) => {
+    const slot = p.slot_disponibilita;
+    const medico = slot?.medici;
+    const paziente = p.pazienti;
+    return [
+      `${paziente?.nome || ''} ${paziente?.cognome || ''}`.trim(),
+      paziente?.email,
+      paziente?.telefono,
+      medico?.nome,
+      slot?.data,
+      slot?.ora_inizio?.slice(0, 5),
+      p.tipo === 'privata' ? 'Privata' : 'SSN',
+      p.stato === 'confermata' ? 'Confermata' : p.stato === 'cancellata' ? 'Annullata' : p.stato,
+      p.codice_breve,
+      p.note,
+    ]
+      .map(escapeCsv)
+      .join(',');
+  });
+
+  const contenuto = [intestazione.map(escapeCsv).join(','), ...righe].join('\r\n');
+  const blob = new Blob(['\ufeff' + contenuto], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = nomeFile;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
 function ElencoPrenotazioni({ adminKey, sedeId, sedeNome, medici }) {
   const [prenotazioni, setPrenotazioni] = useState([]);
   const [caricamento, setCaricamento] = useState(true);
   const [errore, setErrore] = useState(null);
   const [filtroMedicoId, setFiltroMedicoId] = useState('');
+  const [periodoSelezionato, setPeriodoSelezionato] = useState(''); // '' = ultimi 30 giorni + future
   const [eliminandoMassa, setEliminandoMassa] = useState(false);
 
   const carica = () => {
@@ -837,9 +899,24 @@ function ElencoPrenotazioni({ adminKey, sedeId, sedeNome, medici }) {
     }
   };
 
+  // Di default mostriamo solo le prenotazioni recenti (ultimi 30
+  // giorni) e quelle future: con mesi di attività una lista "tutta la
+  // storia" diventerebbe lunghissima da scorrere. Scegliendo un mese
+  // specifico dal menu si consulta lo storico di quel periodo.
+  const sogliaRecenti = giorniFa(30);
+  const prenotazioniPerPeriodo = periodoSelezionato
+    ? prenotazioni.filter((p) => p.slot_disponibilita?.data?.startsWith(periodoSelezionato))
+    : prenotazioni.filter((p) => (p.slot_disponibilita?.data || '') >= sogliaRecenti);
+
   const prenotazioniFiltrate = filtroMedicoId
-    ? prenotazioni.filter((p) => p.slot_disponibilita?.medici?.id === filtroMedicoId)
-    : prenotazioni;
+    ? prenotazioniPerPeriodo.filter((p) => p.slot_disponibilita?.medici?.id === filtroMedicoId)
+    : prenotazioniPerPeriodo;
+
+  // Elenco dei mesi per cui esiste almeno una prenotazione, per
+  // popolare il menu "vai a un mese specifico" (più recente per primo).
+  const mesiDisponibili = Array.from(
+    new Set(prenotazioni.map((p) => p.slot_disponibilita?.data?.slice(0, 7)).filter(Boolean))
+  ).sort((a, b) => b.localeCompare(a));
 
   const numeroAnnullate = prenotazioni.filter((p) => p.stato === 'cancellata').length;
 
@@ -855,6 +932,21 @@ function ElencoPrenotazioni({ adminKey, sedeId, sedeNome, medici }) {
       <h2 style={{ fontSize: 22, marginTop: 40 }}>Prenotazioni</h2>
 
       <div className="non-stampare" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end', marginBottom: 16 }}>
+        <div className="form-field" style={{ marginBottom: 0, minWidth: 220 }}>
+          <label htmlFor="filtro-periodo">Periodo</label>
+          <select
+            id="filtro-periodo"
+            value={periodoSelezionato}
+            onChange={(e) => setPeriodoSelezionato(e.target.value)}
+          >
+            <option value="">Recenti e future (ultimi 30 giorni)</option>
+            {mesiDisponibili.map((mese) => (
+              <option key={mese} value={mese}>
+                {formattaMese(mese)}
+              </option>
+            ))}
+          </select>
+        </div>
         <div className="form-field" style={{ marginBottom: 0, minWidth: 220 }}>
           <label htmlFor="filtro-medico">Filtra per medico</label>
           <select
@@ -881,6 +973,19 @@ function ElencoPrenotazioni({ adminKey, sedeId, sedeNome, medici }) {
         <button
           type="button"
           className="ledger-action"
+          onClick={() =>
+            esportaPrenotazioniCsv(
+              prenotazioniFiltrate,
+              `prenotazioni-${sede_slugify(sedeNome)}-${periodoSelezionato || 'recenti'}.csv`
+            )
+          }
+          disabled={prenotazioniFiltrate.length === 0}
+        >
+          Esporta CSV
+        </button>
+        <button
+          type="button"
+          className="ledger-action"
           style={{ borderColor: 'var(--rust)', color: 'var(--rust)' }}
           onClick={eliminaTutteAnnullate}
           disabled={numeroAnnullate === 0 || eliminandoMassa}
@@ -893,18 +998,16 @@ function ElencoPrenotazioni({ adminKey, sedeId, sedeNome, medici }) {
         <div className="solo-stampa" style={{ marginBottom: 20 }}>
           <p style={{ fontWeight: 600, fontSize: 18 }}>{sedeNome} — Elenco prenotazioni</p>
           <p style={{ color: 'var(--ink-soft)' }}>
-            {medicoFiltrato ? `Medico: ${medicoFiltrato.nome}` : 'Tutti i medici'} · Stampato il {dataStampa}
+            {medicoFiltrato ? `Medico: ${medicoFiltrato.nome}` : 'Tutti i medici'} ·{' '}
+            {periodoSelezionato ? formattaMese(periodoSelezionato) : 'Ultimi 30 giorni e prossime'} ·
+            Stampato il {dataStampa}
           </p>
         </div>
 
         {errore && <div className="error-box">{errore}</div>}
         {caricamento && <p className="ledger-empty">Caricamento…</p>}
         {!caricamento && prenotazioniFiltrate.length === 0 && !errore && (
-          <p className="ledger-empty">
-            {filtroMedicoId
-              ? 'Nessuna prenotazione per questo medico.'
-              : 'Nessuna prenotazione ancora per questo studio.'}
-          </p>
+          <p className="ledger-empty">Nessuna prenotazione per il periodo e il filtro selezionati.</p>
         )}
 
         <div className="ledger">
