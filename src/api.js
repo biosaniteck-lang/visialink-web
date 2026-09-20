@@ -51,6 +51,13 @@ export const api = {
     request(`/api/prenotazioni/${id}/cancella`, { method: 'PATCH' }),
   listaPrenotazioni: (sedeId, adminKey) =>
     request(`/api/prenotazioni?sede_id=${sedeId}`, { headers: adminHeaders(adminKey) }),
+  eliminaPrenotazione: (id, adminKey) =>
+    request(`/api/prenotazioni/${id}`, { method: 'DELETE', headers: adminHeaders(adminKey) }),
+  eliminaPrenotazioniAnnullate: (sedeId, adminKey) =>
+    request(`/api/prenotazioni/annullate?sede_id=${sedeId}`, {
+      method: 'DELETE',
+      headers: adminHeaders(adminKey),
+    }),
 
   // ---- Amministrazione (richiedono adminKey) ----
   chiSonoIo: (adminKey) => request('/api/sedi/me', { headers: adminHeaders(adminKey) }),
