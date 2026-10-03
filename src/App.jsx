@@ -10,6 +10,7 @@ import Admin from './pages/Admin.jsx';
 import PrivacySito from './pages/PrivacySito.jsx';
 import PrivacyPrenotazione from './pages/PrivacyPrenotazione.jsx';
 import Termini from './pages/Termini.jsx';
+import Cookie from './pages/Cookie.jsx';
 import { api } from './api.js';
 
 // Navigazione semplice a stato: niente librerie di routing,
@@ -189,6 +190,7 @@ export default function App() {
       {pagina === 'privacy-sito' && <PrivacySito onIndietro={tornaDaPaginaLegale} />}
       {pagina === 'privacy-prenotazione' && <PrivacyPrenotazione onIndietro={tornaDaPaginaLegale} />}
       {pagina === 'termini' && <Termini onIndietro={tornaDaPaginaLegale} />}
+      {pagina === 'cookie' && <Cookie onIndietro={tornaDaPaginaLegale} />}
 
       <footer className="footer">
         <div className="container footer-inner">
@@ -205,6 +207,9 @@ export default function App() {
             </button>
             <button className="footer-link" onClick={() => vaiAPaginaLegale('termini')}>
               Termini di utilizzo
+            </button>
+            <button className="footer-link" onClick={() => vaiAPaginaLegale('cookie')}>
+              Cookie
             </button>
           </div>
         </div>
