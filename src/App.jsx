@@ -7,6 +7,9 @@ import Prenota from './pages/Prenota.jsx';
 import Conferma from './pages/Conferma.jsx';
 import GestisciPrenotazione from './pages/GestisciPrenotazione.jsx';
 import Admin from './pages/Admin.jsx';
+import PrivacySito from './pages/PrivacySito.jsx';
+import PrivacyPrenotazione from './pages/PrivacyPrenotazione.jsx';
+import Termini from './pages/Termini.jsx';
 import { api } from './api.js';
 
 // Navigazione semplice a stato: niente librerie di routing,
@@ -25,6 +28,7 @@ export default function App() {
   const [prenotazioneIdConfermata, setPrenotazioneIdConfermata] = useState(null);
   const [sede, setSede] = useState(null);
   const [codicePrenotazioneUrl, setCodicePrenotazioneUrl] = useState(null);
+  const [paginaPrecedente, setPaginaPrecedente] = useState('home');
 
   // Se il link contiene ?prenotazione=<id>, apriamo direttamente la
   // pagina di gestione con quella prenotazione già caricata — utile
@@ -84,6 +88,26 @@ export default function App() {
     setPrenotazioneIdConfermata(prenotazioneId);
     setPagina('conferma');
   };
+
+  // Le pagine legali (Privacy, Termini) sono raggiungibili da ogni
+  // punto del sito tramite il footer, e tornano alla pagina da cui si
+  // è partiti invece che sempre alla home.
+  const vaiAPaginaLegale = (nomePagina) => {
+    setPaginaPrecedente(pagina);
+    setPagina(nomePagina);
+  };
+
+  const tornaDaPaginaLegale = () => setPagina(paginaPrecedente);
+
+  // Durante il flusso di prenotazione il link "Privacy" nel footer
+  // punta all'informativa specifica per la prenotazione (quella che
+  // spiega il doppio ruolo Studio/VisiaLink), non a quella generica
+  // del sito: è l'informativa pertinente mentre si stanno fornendo i
+  // propri dati per prenotare.
+  const PAGINE_FLUSSO_PRENOTAZIONE = ['medici', 'slot', 'prenota', 'conferma'];
+  const paginaPrivacyPertinente = PAGINE_FLUSSO_PRENOTAZIONE.includes(pagina)
+    ? 'privacy-prenotazione'
+    : 'privacy-sito';
 
   return (
     <>
@@ -162,9 +186,27 @@ export default function App() {
         />
       )}
 
+      {pagina === 'privacy-sito' && <PrivacySito onIndietro={tornaDaPaginaLegale} />}
+      {pagina === 'privacy-prenotazione' && <PrivacyPrenotazione onIndietro={tornaDaPaginaLegale} />}
+      {pagina === 'termini' && <Termini onIndietro={tornaDaPaginaLegale} />}
+
       <footer className="footer">
-        <div className="container">
-          © {new Date().getFullYear()} VisiaLink — created by MLM ICT SERVICE
+        <div className="container footer-inner">
+          <span>
+            © {new Date().getFullYear()} VisiaLink — created by{' '}
+            <a href="https://www.mlmictservice.it" target="_blank" rel="noopener">
+              www.mlmictservice.it
+            </a>{' '}
+            — P.IVA 11189920967
+          </span>
+          <div className="footer-links">
+            <button className="footer-link" onClick={() => vaiAPaginaLegale(paginaPrivacyPertinente)}>
+              Privacy
+            </button>
+            <button className="footer-link" onClick={() => vaiAPaginaLegale('termini')}>
+              Termini di utilizzo
+            </button>
+          </div>
         </div>
       </footer>
     </>
