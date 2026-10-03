@@ -459,6 +459,104 @@ button {
   font-size: 14px;
 }
 
+.footer a {
+  color: var(--ink-soft);
+  text-decoration: underline;
+}
+
+.footer a:hover {
+  color: var(--ink);
+}
+
+.footer-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.footer-links {
+  display: flex;
+  gap: 20px;
+}
+
+.footer-link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--ink-soft);
+  font-size: 14px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.footer-link:hover {
+  color: var(--ink);
+}
+
+/* ---------------------------------------------------------- */
+/* Pagine legali (Privacy, Termini)                              */
+/* ---------------------------------------------------------- */
+.legale {
+  max-width: 760px;
+}
+
+.legale h2 {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 500;
+  margin: 0 0 8px;
+}
+
+.legale-sottotitolo {
+  color: var(--ink-soft);
+  font-size: 14px;
+  margin: 0 0 32px;
+}
+
+.legale h3 {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 500;
+  margin: 32px 0 10px;
+}
+
+.legale p,
+.legale ul {
+  font-size: 15px;
+  line-height: 1.65;
+  margin: 0 0 14px;
+}
+
+.legale ul {
+  padding-left: 22px;
+}
+
+.legale li {
+  margin-bottom: 8px;
+}
+
+.legale-tabella {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0 24px;
+  font-size: 13.5px;
+}
+
+.legale-tabella th,
+.legale-tabella td {
+  border: 1px solid var(--porcelain-line);
+  padding: 10px 12px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.legale-tabella th {
+  background: #fff;
+  font-weight: 600;
+}
+
 /* ---------------------------------------------------------- */
 /* Stampa elenco prenotazioni                                    */
 /* ---------------------------------------------------------- */
