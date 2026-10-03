@@ -103,10 +103,8 @@ export default function PrivacySito({ onIndietro }) {
 
       <h3>10. Cookie e tecnologie simili</h3>
       <p>
-        Il sito utilizza esclusivamente cookie tecnici, strettamente necessari al suo funzionamento: non
-        sono presenti cookie di profilazione né cookie di terze parti a fini pubblicitari. Il pannello di
-        gestione utilizza inoltre il sessionStorage del browser per mantenere l'accesso durante la sessione
-        di lavoro: resta sul dispositivo dell'utente e non viene mai trasmesso a terzi.
+        Per i dettagli su cookie e tecnologie simili utilizzate dal sito, consulta la{' '}
+        <strong>Cookie Policy</strong>, raggiungibile dal footer di questa pagina.
       </p>
 
       <h3>11. Modifiche a questa informativa</h3>
