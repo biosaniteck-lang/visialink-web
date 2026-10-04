@@ -67,13 +67,14 @@ export default function PrivacySito({ onIndietro }) {
         <li>Supabase Inc. — database, su server ubicati nell'Unione Europea (regione Irlanda)</li>
         <li>Render Services Inc. — hosting del backend applicativo</li>
         <li>Vercel Inc. — hosting del sito e dell'interfaccia web</li>
+        <li>Resend Inc. — invio delle email di conferma e annullamento delle prenotazioni (trattamento svolto per conto degli Studi: vedi l'informativa sulla prenotazione)</li>
       </ul>
       <p>Con ciascuno di questi fornitori è in vigore un accordo sul trattamento dei dati (Data Processing Agreement) conforme all'art. 28 del GDPR.</p>
 
       <h3>5. Trasferimento dei dati verso Paesi extra-UE</h3>
       <p>
-        Il database (Supabase) è ospitato su server ubicati nell'Unione Europea (Irlanda). Vercel Inc. e
-        Render Services Inc., pur offrendo infrastrutture con sede nell'Unione Europea, sono società con
+        Il database (Supabase) è ospitato su server ubicati nell'Unione Europea (Irlanda). Vercel Inc.,
+        Render Services Inc. e Resend Inc., pur offrendo infrastrutture con sede nell'Unione Europea, sono società con
         sede legale negli Stati Uniti: un trasferimento di dati verso un Paese extra-UE non può quindi
         essere escluso in senso assoluto, ma è disciplinato dalle clausole contrattuali standard (Standard
         Contractual Clauses) adottate dalla Commissione Europea, a garanzia di un livello di protezione
