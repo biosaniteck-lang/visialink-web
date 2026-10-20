@@ -41,7 +41,7 @@ export default function PrivacyPrenotazione({ onIndietro }) {
       </table>
 
       <h3>3. Per quali finalità</h3>
-      <p>I dati raccolti durante la prenotazione sono utilizzati per gestire la prenotazione, inviarti via email la conferma e l'eventuale annullamento (vedi punto 6), e costituire presso lo Studio un'anagrafica dei pazienti, aggiornata automaticamente. La base giuridica è l'esecuzione di misure precontrattuali su tua richiesta (art. 6.1.b GDPR).</p>
+      <p>I dati raccolti durante la prenotazione sono utilizzati per gestire la prenotazione, inviarti via email la conferma, l'eventuale annullamento e il promemoria della visita (vedi punto 6), e costituire presso lo Studio un'anagrafica dei pazienti, aggiornata automaticamente. La base giuridica è l'esecuzione di misure precontrattuali su tua richiesta (art. 6.1.b GDPR).</p>
 
       <h3>4. Natura del conferimento dei dati</h3>
       <p>Il conferimento di nome, cognome, email, telefono e tipo di prenotazione è obbligatorio: senza questi dati non è possibile completare la prenotazione. Le note libere sono facoltative.</p>
@@ -54,21 +54,31 @@ export default function PrivacyPrenotazione({ onIndietro }) {
         consenso esplicito prestato al momento della prenotazione.
       </p>
       <p>
-        L'email di conferma riporta il riepilogo della prenotazione — studio, medico e specialità, data,
-        ora e tipo di visita — che può lasciar intendere informazioni sul tuo stato di salute. Non include
-        mai le note che hai eventualmente scritto nel modulo.
+        Le email di conferma, di annullamento e di promemoria riportano il riepilogo della prenotazione —
+        studio, medico e specialità, data, ora e tipo di visita — che può lasciar intendere informazioni
+        sul tuo stato di salute. Non includono mai le note che hai eventualmente scritto nel modulo.
       </p>
 
       <h3>6. Email di servizio e comunicazioni future</h3>
       <p>
         Quando prenoti ricevi automaticamente, all'indirizzo email che hai indicato, una email di conferma
         con il riepilogo e il codice della prenotazione; se la prenotazione viene annullata, ne ricevi una
-        di annullamento. Sono comunicazioni di servizio, necessarie per dare seguito alla tua richiesta
-        (art. 6.1.b GDPR): non richiedono un consenso separato e non contengono pubblicità. L'invio è
-        affidato a un fornitore tecnico (vedi punto 7).
+        di annullamento.
       </p>
       <p>
-        Al momento VisiaLink non invia promemoria automatici, messaggi WhatsApp o newsletter. Se in futuro
+        Il giorno prima della visita ricevi inoltre un promemoria via email, con il riepilogo della
+        prenotazione e il pulsante per gestirla o annullarla. Il promemoria è inviato una sola volta, solo
+        se la prenotazione è ancora confermata e se è stata effettuata con almeno 12 ore di anticipo
+        rispetto alla visita; per non inviarlo due volte, il sistema registra la data e l'ora in cui è
+        stato inviato. Se lo Studio ha disattivato questa funzione, non ricevi il promemoria.
+      </p>
+      <p>
+        Conferma, annullamento e promemoria sono comunicazioni di servizio, necessarie per dare seguito
+        alla tua richiesta (art. 6.1.b GDPR): non richiedono un consenso separato e non contengono
+        pubblicità. L'invio è affidato a un fornitore tecnico (vedi punto 7).
+      </p>
+      <p>
+        Al momento VisiaLink non invia messaggi WhatsApp o newsletter. Se in futuro
         lo Studio attivasse queste funzionalità, riceverai un'informativa aggiornata e, dove richiesto, un
         consenso specifico e distinto da quello necessario per la prenotazione.
       </p>
@@ -77,8 +87,8 @@ export default function PrivacyPrenotazione({ onIndietro }) {
       <p>
         I dati sono conservati su Supabase, su server ubicati nell'Unione Europea (Irlanda). La piattaforma
         si avvale inoltre di Vercel Inc. e Render Services Inc. (hosting) e di Resend Inc. (invio delle
-        email di conferma e annullamento, per cui tratta il tuo nome, il tuo indirizzo email e il riepilogo
-        della prenotazione): pur offrendo infrastrutture con sede nell'Unione Europea, queste società hanno
+        email di conferma, annullamento e promemoria, per cui tratta il tuo nome, il tuo indirizzo email e
+        il riepilogo della prenotazione): pur offrendo infrastrutture con sede nell'Unione Europea, queste società hanno
         sede legale negli Stati Uniti, per cui un trasferimento
         extra-UE non può essere escluso in senso assoluto, ma è disciplinato dalle clausole contrattuali
         standard adottate dalla Commissione Europea.

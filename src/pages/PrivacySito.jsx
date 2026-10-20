@@ -67,7 +67,7 @@ export default function PrivacySito({ onIndietro }) {
         <li>Supabase Inc. — database, su server ubicati nell'Unione Europea (regione Irlanda)</li>
         <li>Render Services Inc. — hosting del backend applicativo</li>
         <li>Vercel Inc. — hosting del sito e dell'interfaccia web</li>
-        <li>Resend Inc. — invio delle email di conferma e annullamento delle prenotazioni (trattamento svolto per conto degli Studi: vedi l'informativa sulla prenotazione)</li>
+        <li>Resend Inc. — invio delle email di conferma, annullamento e promemoria delle prenotazioni (trattamento svolto per conto degli Studi: vedi l'informativa sulla prenotazione)</li>
       </ul>
       <p>Con ciascuno di questi fornitori è in vigore un accordo sul trattamento dei dati (Data Processing Agreement) conforme all'art. 28 del GDPR.</p>
 
