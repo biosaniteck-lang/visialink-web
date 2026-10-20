@@ -19,7 +19,8 @@ export default function Cookie({ onIndietro }) {
       <p>
         <strong>Il sito visialink.it non utilizza alcun cookie</strong> — né tecnico, né analitico, né di
         profilazione, né di terze parti. Non sono presenti strumenti di tracciamento, statistica o
-        pubblicità di alcun tipo.
+        pubblicità di alcun tipo. Anche i caratteri tipografici sono ospitati sul sito stesso: il
+        browser non contatta servizi esterni per caricarli.
       </p>
 
       <h3>3. sessionStorage del pannello di gestione</h3>
@@ -29,7 +30,11 @@ export default function Cookie({ onIndietro }) {
         l'inserimento della chiave. A differenza di un cookie, questo dato:
       </p>
       <ul>
-        <li>resta esclusivamente sul dispositivo di chi lo usa, e non viene mai inviato al server</li>
+        <li>
+          resta sul dispositivo di chi lo usa e non viene inviato automaticamente al server, come invece
+          avviene per i cookie; la chiave è trasmessa al servizio solo per autenticare le singole
+          operazioni richieste dall'utente
+        </li>
         <li>viene cancellato automaticamente alla chiusura della scheda o del browser</li>
         <li>non richiede consenso, perché strettamente necessario al funzionamento del pannello stesso</li>
       </ul>
