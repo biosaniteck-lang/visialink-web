@@ -39,7 +39,9 @@ visialink-web/
 │       ├── Slot.jsx                    # orari disponibili, con selettore data (non permette date passate)
 │       ├── Prenota.jsx                 # form di prenotazione
 │       ├── Conferma.jsx                # mostra il codice breve della prenotazione
-│       ├── GestisciPrenotazione.jsx    # self-service: cerca per codice, annulla
+│       ├── GestisciPrenotazione.jsx    # self-service: cerca per codice, annulla (il pulsante delle email porta qui)
+│       ├── PrivacyPrenotazione.jsx     # informativa privacy del paziente (Titolare = studio, MLM ICT Service = Responsabile)
+│       ├── PrivacySito.jsx             # informativa privacy del sito visialink.it e del pannello admin
 │       └── Admin.jsx                   # pannello back-office (vedi sotto)
 ├── index.html
 ├── package.json
@@ -47,6 +49,16 @@ visialink-web/
 ├── vercel.json                   # rewrite SPA per ogni percorso (slug studio, /admin)
 └── .gitignore
 ```
+
+## Email al paziente
+
+Il sito non invia email: lo fa il backend (via Resend). Il paziente
+riceve una email di conferma, una di annullamento e, il giorno prima
+della visita, un promemoria con il pulsante "Gestisci o annulla la
+prenotazione", che porta alla pagina `GestisciPrenotazione`. L'invio del
+promemoria si può spegnere per singolo studio dal backend (colonna
+`promemoria_attivi`: vedi il README del backend); per ora non c'è un
+interruttore nel pannello admin.
 
 ## Il pannello Admin (`/admin`)
 
@@ -76,8 +88,8 @@ Da lì si può:
 - consultare l'**anagrafica pazienti**: un elenco unico delle persone
   che hanno prenotato (deduplicato automaticamente dal backend), con
   numero di visite e data dell'ultima, esportabile in **CSV** — pronto
-  per email, newsletter o messaggi WhatsApp quando quelle funzionalità
-  saranno attivate
+  per eventuali newsletter o messaggi WhatsApp quando quelle
+  funzionalità saranno attivate
 - scaricare un **backup completo** dei dati in JSON *(solo chiave generale)*
 
 ## Deploy su Vercel
@@ -90,12 +102,18 @@ Se il backend cambia indirizzo, si aggiorna la variabile d'ambiente
 `VITE_API_URL` nelle impostazioni del progetto Vercel, senza toccare
 il codice.
 
+Quando il dominio definitivo sarà collegato, va impostata anche la
+variabile `SITE_URL` sul backend (Render), perché i link nelle email
+puntino al dominio giusto.
+
 ## Collegare il dominio visialink.it (da fare)
 
 1. Nel progetto Vercel → **Settings** → **Domains** → aggiungi `visialink.it`
 2. Vercel mostra i record DNS da impostare
 3. Inseriscili nel pannello DNS di **Aruba** (dove il dominio è registrato)
 4. La propagazione può richiedere da pochi minuti a qualche ora
+5. Imposta `SITE_URL=https://visialink.it` su Render (backend) e ripeti
+   una prenotazione di prova per controllare i link nelle email
 
 ## Flusso di lavoro adottato in questo progetto
 
@@ -107,11 +125,13 @@ compili (`npm run build`) prima di caricarlo su GitHub.
 
 ## Da fare
 
-- Integrazione email di conferma (Resend) — non ancora iniziata
 - Collegamento del dominio `visialink.it` (vedi sopra)
-- Informativa privacy: bozze già predisposte (sito, prenotazione
-  paziente, clausola per lo studio cliente) — da far rivedere a un
-  legale prima della pubblicazione definitiva sul sito
+- Interruttore dei promemoria email nel pannello admin
+- Informativa privacy: i testi del sito e della prenotazione sono già
+  pubblicati e aggiornati con le email di servizio (conferma,
+  annullamento, promemoria); sono in revisione da parte di un legale,
+  così come la clausola per gli studi clienti e l'atto di nomina a
+  Responsabile del trattamento (art. 28) da far firmare a ogni studio
 - Possibili estensioni future: autenticazione vera per lo staff dello
-  studio, pagamenti Stripe per le visite private, app mobile nativa,
+  studio, pagamenti Stripe per le visite private, WhatsApp, app mobile nativa,
   videoconsulto (tabella già presente nel database ma non collegata)
