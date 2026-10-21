@@ -74,6 +74,26 @@ function FormModificaStudio({ adminKey, sede, onAggiornata }) {
   const [salvato, setSalvato] = useState(false);
   const [rigenerando, setRigenerando] = useState(false);
   const [chiaveAppenaGenerata, setChiaveAppenaGenerata] = useState(null);
+  const [salvandoPromemoria, setSalvandoPromemoria] = useState(false);
+
+  // Se il campo non c'è (studio creato prima dell'introduzione dei
+  // promemoria) vale come "attivo", come fa il backend.
+  const promemoriaAttivi = sede.promemoria_attivi !== false;
+
+  const handleCambiaPromemoria = async (e) => {
+    const nuovoValore = e.target.checked;
+    setErrore(null);
+    setSalvato(false);
+    setSalvandoPromemoria(true);
+    try {
+      const sedeAggiornata = await api.aggiornaSede(sede.id, { promemoria_attivi: nuovoValore }, adminKey);
+      onAggiornata(sedeAggiornata);
+    } catch (err) {
+      setErrore(err.message);
+    } finally {
+      setSalvandoPromemoria(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -183,6 +203,28 @@ function FormModificaStudio({ adminKey, sede, onAggiornata }) {
           {invio ? 'Salvataggio…' : 'Salva modifiche'}
         </button>
       </form>
+
+      <hr style={{ border: 'none', borderTop: '1px solid var(--porcelain-line)', margin: '24px 0' }} />
+
+      <p style={{ fontWeight: 600, marginBottom: 8 }}>Promemoria email ai pazienti</p>
+      <p style={{ color: 'var(--ink-soft)', fontSize: 14, marginBottom: 12 }}>
+        Il giorno prima della visita il paziente riceve un'email di promemoria con il pulsante per
+        gestire o annullare la prenotazione. Se li disattivi, i pazienti di questo studio non li
+        ricevono; le email di conferma e di annullamento continuano a partire.
+      </p>
+      <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 15, marginBottom: 4 }}>
+        <input
+          type="checkbox"
+          checked={promemoriaAttivi}
+          onChange={handleCambiaPromemoria}
+          disabled={salvandoPromemoria}
+        />
+        {salvandoPromemoria
+          ? 'Salvataggio…'
+          : promemoriaAttivi
+          ? 'Promemoria attivi'
+          : 'Promemoria disattivati'}
+      </label>
 
       <hr style={{ border: 'none', borderTop: '1px solid var(--porcelain-line)', margin: '24px 0' }} />
 
