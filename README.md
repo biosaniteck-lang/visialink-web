@@ -142,10 +142,15 @@ un'app (senza passare dagli store):
   (`send`, `rsend`, `resend._domainkey`, `_dmarc`): non toccarli.
 - Su Render (backend) `SITE_URL=https://visialink.it`: i link nelle email
   puntano al dominio definitivo (verificato con una prenotazione di prova).
-- Il backend accetta richieste da qualunque origine (`cors()` aperto):
-  l'accesso al pannello usa chiavi nell'intestazione, non cookie. Quando
-  ci saranno clienti veri conviene restringere CORS a `visialink.it` e
-  `www.visialink.it`.
+- **CORS del backend (ristretto il 22/10/2026)**: il backend risponde ai
+  browser solo da `visialink.it`, `www.visialink.it`, `visialink-web.vercel.app`
+  e `localhost:5173` (sviluppo locale). Le richieste senza `Origin`
+  (cron-job.org, controlli di Render, prove da terminale) passano comunque
+  e restano protette da `x-admin-key` / `x-cron-secret`. Per autorizzare un
+  dominio in più senza modificare il codice: variabile `ALLOWED_ORIGINS` su
+  Render (elenco separato da virgole, senza barra finale). Se dopo un
+  cambio di dominio il sito non carica più medici e orari, controllare
+  prima la console del browser: un errore "CORS" indica un dominio mancante.
 
 ## Flusso di lavoro adottato in questo progetto
 
@@ -159,7 +164,6 @@ compili (`npm run build`) prima di caricarlo su GitHub.
 
 - Cookie policy: dichiarare service worker e chiave `localStorage` del
   banner di installazione (da far vedere al legale)
-- Restringere CORS del backend ai soli domini VisiaLink
 - Informativa privacy: i testi del sito e della prenotazione sono già
   pubblicati e aggiornati con le email di servizio (conferma,
   annullamento, promemoria); sono in revisione da parte di un legale,
