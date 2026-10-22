@@ -59,7 +59,7 @@ export default function Cookie({ onIndietro }) {
         <li>
           <strong>Preferenza sull'invito all'installazione (localStorage):</strong> se chiudi il messaggio
           che propone di installare l'app, il browser salva soltanto la data della chiusura, per non
-          riproporlo per 30 giorni. Il dato resta sul tuo dispositivo e non viene inviato a VisiaLink né
+          riproporlo per 7 giorni. Il dato resta sul tuo dispositivo e non viene inviato a VisiaLink né
           a terzi.
         </li>
       </ul>
