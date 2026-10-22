@@ -2,12 +2,116 @@
 <html lang="it">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>VisiaLink — Prenotazioni mediche online</title>
     <meta name="description" content="Prenota una visita medica in pochi minuti: scegli il medico, l'orario, conferma." />
+
+    <!-- App installabile (PWA) -->
+    <meta name="theme-color" content="#1c2e2b" />
+    <link rel="manifest" href="/manifest.webmanifest" id="vl-manifest" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="VisiaLink" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <script>
+      // Ogni studio ha il proprio link (es. /rossi): chi installa l'app da quel link
+      // la riaprirà direttamente sullo studio giusto.
+      (function () {
+        try {
+          var p = location.pathname.replace(/\/+$/, '') || '/';
+          if (p !== '/' && p !== '/admin') {
+            var m = {
+              id: p, name: 'VisiaLink — Prenotazioni mediche', short_name: 'VisiaLink', lang: 'it',
+              start_url: p, scope: '/', display: 'standalone',
+              background_color: '#f1efe8', theme_color: '#1c2e2b',
+              icons: [
+                { src: location.origin + '/icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+                { src: location.origin + '/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+                { src: location.origin + '/icons/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' }
+              ]
+            };
+            var url = URL.createObjectURL(new Blob([JSON.stringify(m)], { type: 'application/manifest+json' }));
+            document.getElementById('vl-manifest').setAttribute('href', url);
+          }
+          if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+              navigator.serviceWorker.register('/sw.js').catch(function () {});
+            });
+          }
+        } catch (e) {}
+      })();
+    </script>
+
+    <script>
+      // Invito discreto a installare l'app (Android/Chrome: pulsante "Installa"; iPhone/iPad: istruzioni)
+      (function () {
+        try {
+          if (location.pathname.indexOf('/admin') === 0) return;
+          var standalone = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone;
+          if (standalone) return;
+          var KEY = 'vl-install-nascondi', GIORNI = 30;
+          try {
+            var t = parseInt(localStorage.getItem(KEY) || '0', 10);
+            if (t && Date.now() - t < GIORNI * 86400000) return;
+          } catch (e) {}
+
+          var ua = navigator.userAgent || '';
+          var iOS = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+          var safariIOS = iOS && /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS|Instagram|FBAN|FBAV|Line/.test(ua);
+          var deferred = null, mostrato = false;
+
+          var css = document.createElement('style');
+          css.textContent =
+            '#vl-install{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:9999;max-width:520px;margin:0 auto;' +
+            'background:#1c2e2b;color:#f1efe8;border-radius:14px;padding:14px 16px;box-shadow:0 10px 30px rgba(0,0,0,.28);' +
+            'font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;display:flex;gap:12px;align-items:center}' +
+            '#vl-install img{width:44px;height:44px;border-radius:10px;flex:none}' +
+            '#vl-install .vl-t{flex:1;min-width:0}#vl-install strong{display:block;font-size:15px;margin-bottom:2px}' +
+            '#vl-install button{font:inherit;cursor:pointer;border:0;border-radius:999px;padding:9px 16px;white-space:nowrap}' +
+            '#vl-install .vl-ok{background:#b8863e;color:#fff;font-weight:600}' +
+            '#vl-install .vl-x{background:transparent;color:#f1efe8;opacity:.75;padding:6px 8px;font-size:20px;line-height:1}' +
+            '@media print{#vl-install{display:none}}';
+          document.head.appendChild(css);
+
+          function nascondi() {
+            var el = document.getElementById('vl-install'); if (el) el.remove();
+            try { localStorage.setItem(KEY, String(Date.now())); } catch (e) {}
+          }
+          function mostra() {
+            if (mostrato || document.getElementById('vl-install')) return;
+            mostrato = true;
+            var d = document.createElement('div');
+            d.id = 'vl-install'; d.setAttribute('role', 'region'); d.setAttribute('aria-label', 'Installa VisiaLink');
+            var testo = safariIOS
+              ? '<strong>Aggiungi VisiaLink alla Home</strong>Tocca <b>Condividi</b> (il quadrato con la freccia) e poi <b>“Aggiungi alla schermata Home”</b>.'
+              : '<strong>Installa VisiaLink</strong>Aggiungila alla schermata Home per prenotare più in fretta.';
+            d.innerHTML = '<img src="/icons/icon-192.png" alt="" /><div class="vl-t">' + testo + '</div>' +
+              (safariIOS ? '' : '<button type="button" class="vl-ok">Installa</button>') +
+              '<button type="button" class="vl-x" aria-label="Chiudi">×</button>';
+            document.body.appendChild(d);
+            d.querySelector('.vl-x').onclick = nascondi;
+            var ok = d.querySelector('.vl-ok');
+            if (ok) ok.onclick = function () {
+              if (!deferred) return nascondi();
+              deferred.prompt();
+              deferred.userChoice.then(function () { deferred = null; nascondi(); });
+            };
+          }
+
+          window.addEventListener('beforeinstallprompt', function (e) {
+            e.preventDefault(); deferred = e;
+            setTimeout(mostra, 4000);
+          });
+          window.addEventListener('appinstalled', function () { var el = document.getElementById('vl-install'); if (el) el.remove(); });
+          if (safariIOS) setTimeout(mostra, 4000);
+        } catch (e) {}
+      })();
+    </script>
   </body>
 </html>
