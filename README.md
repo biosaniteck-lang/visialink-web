@@ -5,8 +5,8 @@ amministrazione per **VisiaLink**, piattaforma SaaS multi-tenant:
 uno stesso sito serve più studi/cliniche diversi, ciascuno con il
 proprio link personalizzato.
 
-- **Questo sito** → deploy su Vercel: `visialink-web.vercel.app`
-  (dominio definitivo previsto: `visialink.it`, acquistato su Aruba, non ancora collegato)
+- **Questo sito** → deploy su Vercel, dominio definitivo **`visialink.it`** (acquistato su Aruba, collegato il 22/10/2026).
+  Il vecchio indirizzo `visialink-web.vercel.app` resta attivo.
 - **Backend** → [visialink-backend](https://github.com/biosaniteck-lang/visialink-backend), su Render: `https://visialink-backend.onrender.com`
 - **Database:** Supabase
 
@@ -43,7 +43,13 @@ visialink-web/
 │       ├── PrivacyPrenotazione.jsx     # informativa privacy del paziente (Titolare = studio, MLM ICT Service = Responsabile)
 │       ├── PrivacySito.jsx             # informativa privacy del sito visialink.it e del pannello admin
 │       └── Admin.jsx                   # pannello back-office (vedi sotto)
-├── index.html
+├── public/
+│   ├── manifest.webmanifest      # app installabile (PWA)
+│   ├── sw.js                     # service worker minimale (vedi "App installabile")
+│   ├── offline.html              # pagina di cortesia senza connessione
+│   ├── icons/                    # icone app (192, 512, maskable, apple-touch, favicon)
+│   └── fonts/                    # font self-hosted
+├── index.html                    # meta PWA, registrazione service worker, banner di installazione
 ├── package.json
 ├── vite.config.js
 ├── vercel.json                   # rewrite SPA per ogni percorso (slug studio, /admin)
@@ -56,9 +62,10 @@ Il sito non invia email: lo fa il backend (via Resend). Il paziente
 riceve una email di conferma, una di annullamento e, il giorno prima
 della visita, un promemoria con il pulsante "Gestisci o annulla la
 prenotazione", che porta alla pagina `GestisciPrenotazione`. L'invio del
-promemoria si può spegnere per singolo studio dal backend (colonna
-`promemoria_attivi`: vedi il README del backend); per ora non c'è un
-interruttore nel pannello admin.
+promemoria si può spegnere per singolo studio dal pannello admin
+(interruttore "promemoria email") o dal backend (colonna
+`promemoria_attivi`: vedi il README del backend). Il mittente delle email
+è `prenotazioni@visialink.it` (dominio verificato su Resend).
 
 ## Il pannello Admin (`/admin`)
 
@@ -106,14 +113,39 @@ Quando il dominio definitivo sarà collegato, va impostata anche la
 variabile `SITE_URL` sul backend (Render), perché i link nelle email
 puntino al dominio giusto.
 
-## Collegare il dominio visialink.it (da fare)
+## App installabile (PWA)
 
-1. Nel progetto Vercel → **Settings** → **Domains** → aggiungi `visialink.it`
-2. Vercel mostra i record DNS da impostare
-3. Inseriscili nel pannello DNS di **Aruba** (dove il dominio è registrato)
-4. La propagazione può richiedere da pochi minuti a qualche ora
-5. Imposta `SITE_URL=https://visialink.it` su Render (backend) e ripeti
-   una prenotazione di prova per controllare i link nelle email
+Il sito si può aggiungere alla schermata Home del telefono come
+un'app (senza passare dagli store):
+
+- `public/manifest.webmanifest` descrive l'app; per i link degli studi
+  (es. `/rossi`) `index.html` genera al volo un manifest con `start_url`
+  uguale al link, così l'app installata si apre direttamente sullo
+  studio giusto. `/admin` usa il manifest standard.
+- `public/sw.js` è un service worker minimale: mostra `offline.html` se
+  manca la connessione e mette in cache solo file statici (`/assets/`,
+  `/fonts/`, `/icons/`). **Non memorizza mai le chiamate al backend**
+  (prenotazioni, dati dei pazienti, pannello admin). Per forzare
+  l'aggiornamento della cache cambiare `VERSION` in `sw.js`.
+- In `index.html` un piccolo banner invita a installare l'app: su
+  Android/Chrome compare il pulsante "Installa", su iPhone/iPad (Safari)
+  le istruzioni "Condividi → Aggiungi alla schermata Home". Non compare
+  su `/admin`, in stampa, o se l'app è già installata; dopo la chiusura
+  non ricompare per 30 giorni (data salvata in `localStorage`, chiave
+  `vl-install-nascondi`: dato solo tecnico, da citare nella Cookie policy).
+
+## Dominio visialink.it (collegato)
+
+- Vercel → **Settings → Domains**: `visialink.it` (record A `@` → `216.198.79.1`
+  nel DNS di Aruba; `www` è un CNAME verso `visialink.it`).
+- Sul DNS di Aruba restano i record di posta (`mx`) e quelli di Resend
+  (`send`, `rsend`, `resend._domainkey`, `_dmarc`): non toccarli.
+- Su Render (backend) `SITE_URL=https://visialink.it`: i link nelle email
+  puntano al dominio definitivo (verificato con una prenotazione di prova).
+- Il backend accetta richieste da qualunque origine (`cors()` aperto):
+  l'accesso al pannello usa chiavi nell'intestazione, non cookie. Quando
+  ci saranno clienti veri conviene restringere CORS a `visialink.it` e
+  `www.visialink.it`.
 
 ## Flusso di lavoro adottato in questo progetto
 
@@ -125,8 +157,9 @@ compili (`npm run build`) prima di caricarlo su GitHub.
 
 ## Da fare
 
-- Collegamento del dominio `visialink.it` (vedi sopra)
-- Interruttore dei promemoria email nel pannello admin
+- Cookie policy: dichiarare service worker e chiave `localStorage` del
+  banner di installazione (da far vedere al legale)
+- Restringere CORS del backend ai soli domini VisiaLink
 - Informativa privacy: i testi del sito e della prenotazione sono già
   pubblicati e aggiornati con le email di servizio (conferma,
   annullamento, promemoria); sono in revisione da parte di un legale,
