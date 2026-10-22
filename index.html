@@ -55,7 +55,7 @@
           if (location.pathname.indexOf('/admin') === 0) return;
           var standalone = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone;
           if (standalone) return;
-          var KEY = 'vl-install-nascondi', GIORNI = 30;
+          var KEY = 'vl-install-nascondi', GIORNI = 7;
           try {
             var t = parseInt(localStorage.getItem(KEY) || '0', 10);
             if (t && Date.now() - t < GIORNI * 86400000) return;

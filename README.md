@@ -131,7 +131,7 @@ un'app (senza passare dagli store):
   Android/Chrome compare il pulsante "Installa", su iPhone/iPad (Safari)
   le istruzioni "Condividi → Aggiungi alla schermata Home". Non compare
   su `/admin`, in stampa, o se l'app è già installata; dopo la chiusura
-  non ricompare per 30 giorni (data salvata in `localStorage`, chiave
+  non ricompare per 7 giorni (data salvata in `localStorage`, chiave
   `vl-install-nascondi`: dato solo tecnico, da citare nella Cookie policy).
 
 ## Dominio visialink.it (collegato)
