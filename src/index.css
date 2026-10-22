@@ -276,7 +276,10 @@ button {
 /* Sezioni generiche                                             */
 /* ---------------------------------------------------------- */
 .section {
-  padding: 64px 0;
+  /* solo verticale: il padding orizzontale arriva da .container (altrimenti le pagine
+     toccano i bordi dello schermo sui telefoni) */
+  padding-top: 64px;
+  padding-bottom: 64px;
 }
 
 .section h2 {
