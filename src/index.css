@@ -190,6 +190,7 @@ button {
   .nav-cta {
     flex: 1 1 0;
     min-width: 0;
+    align-self: stretch;
     display: flex;
     align-items: center;
     justify-content: center;
