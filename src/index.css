@@ -502,6 +502,56 @@ button {
   cursor: not-allowed;
 }
 
+/* Consenso al trattamento dei dati, sopra il pulsante di prenotazione */
+.consenso-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #fff;
+  border: 1px solid var(--porcelain-line);
+  border-left: 3px solid var(--brass);
+  padding: 16px 18px;
+  margin: 8px 0 20px;
+  font-size: 14px;
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+.consenso-box input[type='checkbox'] {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin: 2px 0 0;
+  accent-color: var(--ink);
+  cursor: pointer;
+}
+
+.consenso-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: var(--brass-dark);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.consenso-nota {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+/* Informativa aperta sopra il modulo, senza perdere i dati inseriti */
+.modale-informativa {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  overflow-y: auto;
+  background: var(--porcelain);
+  -webkit-overflow-scrolling: touch;
+}
+
 .back-link {
   background: none;
   border: none;
