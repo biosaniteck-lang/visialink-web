@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { api } from '../api.js';
+import PrivacyPrenotazione from './PrivacyPrenotazione.jsx';
 
 function formattaData(dataIso) {
   const d = new Date(dataIso + 'T00:00:00');
@@ -19,6 +20,35 @@ export default function Prenota({ medico, slot, onConfermata, onIndietro }) {
   const [note, setNote] = useState('');
   const [invio, setInvio] = useState(false);
   const [errore, setErrore] = useState(null);
+  const [consenso, setConsenso] = useState(false);
+  const [mostraInformativa, setMostraInformativa] = useState(false);
+
+  // L'informativa si apre sopra il modulo, così i dati già scritti non si
+  // perdono. Il pulsante "Indietro" del telefono la chiude (invece di
+  // uscire dal modulo): all'apertura aggiungiamo una voce alla cronologia.
+  const apriInformativa = () => {
+    const stato = window.history.state || {};
+    window.history.pushState({ ...stato, idx: (stato.idx ?? 0) + 1, modale: true }, '');
+    setMostraInformativa(true);
+  };
+
+  const chiudiInformativa = () => {
+    if (window.history.state?.modale) window.history.back();
+    else setMostraInformativa(false);
+  };
+
+  useEffect(() => {
+    if (!mostraInformativa) return undefined;
+    const alCambioCronologia = (evento) => {
+      if (!evento.state?.modale) setMostraInformativa(false);
+    };
+    window.addEventListener('popstate', alCambioCronologia);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('popstate', alCambioCronologia);
+      document.body.style.overflow = '';
+    };
+  }, [mostraInformativa]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,6 +59,11 @@ export default function Prenota({ medico, slot, onConfermata, onIndietro }) {
       return;
     }
 
+    if (!consenso) {
+      setErrore("Per prenotare devi leggere l'informativa privacy e dare il consenso al trattamento dei dati.");
+      return;
+    }
+
     setInvio(true);
     try {
       const paziente = await api.creaPaziente({
@@ -36,6 +71,7 @@ export default function Prenota({ medico, slot, onConfermata, onIndietro }) {
         cognome: cognome.trim(),
         email: email.trim() || null,
         telefono: telefono.trim() || null,
+        consenso_privacy: true,
       });
 
       const prenotazione = await api.creaPrenotazione({
@@ -43,6 +79,7 @@ export default function Prenota({ medico, slot, onConfermata, onIndietro }) {
         paziente_id: paziente.id,
         tipo,
         note: note.trim() || null,
+        consenso_privacy: true,
       });
 
       onConfermata({ prenotazione, paziente, prenotazioneId: prenotazione.codice_breve });
@@ -122,10 +159,36 @@ export default function Prenota({ medico, slot, onConfermata, onIndietro }) {
           <textarea id="note" value={note} onChange={(e) => setNote(e.target.value)} />
         </div>
 
-        <button className="submit-btn" type="submit" disabled={invio}>
+        <label className="consenso-box" htmlFor="consenso-privacy">
+          <input
+            id="consenso-privacy"
+            type="checkbox"
+            checked={consenso}
+            onChange={(e) => setConsenso(e.target.checked)}
+          />
+          <span>
+            Ho letto l'
+            <button type="button" className="consenso-link" onClick={apriInformativa}>
+              informativa privacy
+            </button>{' '}
+            e acconsento al trattamento dei miei dati personali, compresi quelli relativi alla
+            salute, per la gestione della prenotazione.
+          </span>
+        </label>
+
+        <button className="submit-btn" type="submit" disabled={invio || !consenso}>
           {invio ? 'Invio in corso…' : 'Conferma prenotazione'}
         </button>
+        {!consenso && (
+          <p className="consenso-nota">Per prenotare spunta la casella del consenso.</p>
+        )}
       </form>
+
+      {mostraInformativa && (
+        <div className="modale-informativa" role="dialog" aria-modal="true">
+          <PrivacyPrenotazione onIndietro={chiudiInformativa} />
+        </div>
+      )}
     </div>
   );
 }
