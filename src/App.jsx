@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import logo from './assets/logo.png';
 import Home from './pages/Home.jsx';
 import Medici from './pages/Medici.jsx';
@@ -30,6 +30,53 @@ export default function App() {
   const [sede, setSede] = useState(null);
   const [codicePrenotazioneUrl, setCodicePrenotazioneUrl] = useState(null);
   const [paginaPrecedente, setPaginaPrecedente] = useState('home');
+
+  // Copia sempre aggiornata dei dati del flusso di prenotazione: serve al
+  // gestore del pulsante "Indietro" del browser per sapere se una pagina
+  // si può ancora mostrare (es. non si torna a "prenota" senza uno slot).
+  const flusso = useRef({});
+  flusso.current = { medicoSelezionato, slotSelezionato, pazienteConfermato };
+
+  // Cronologia del browser. Il sito cambia pagina con lo stato interno e
+  // l'indirizzo resta lo stesso: senza queste voci il pulsante "Indietro"
+  // (del browser o del telefono) uscirebbe dal sito. Ogni cambio di pagina
+  // aggiunge una voce con la pagina e la sua posizione (idx).
+  const naviga = (nuovaPagina, { sostituisci = false } = {}) => {
+    const idxAttuale = window.history.state?.idx ?? 0;
+    const stato = { vl: 1, pagina: nuovaPagina, idx: sostituisci ? idxAttuale : idxAttuale + 1 };
+    if (sostituisci) window.history.replaceState(stato, '');
+    else window.history.pushState(stato, '');
+    setPagina(nuovaPagina);
+  };
+
+  // All'apertura, e dopo un ricaricamento, la voce corrente diventa la
+  // pagina iniziale del sito (posizione 0).
+  useEffect(() => {
+    if (eAdmin) return;
+    const inizialePagina = new URLSearchParams(window.location.search).get('prenotazione')
+      ? 'gestisci'
+      : 'home';
+    window.history.replaceState({ vl: 1, pagina: inizialePagina, idx: 0 }, '');
+  }, [eAdmin]);
+
+  // Pulsante "Indietro" / "Avanti" del browser o del telefono.
+  useEffect(() => {
+    if (eAdmin) return;
+    const alCambioCronologia = (evento) => {
+      const stato = evento.state;
+      if (!stato || !stato.vl) return;
+      const { medicoSelezionato: m, slotSelezionato: sl, pazienteConfermato: p } = flusso.current;
+      const richieste = {
+        slot: m,
+        prenota: m && sl,
+        conferma: m && sl && p,
+      };
+      const mostrabile = !(stato.pagina in richieste) || richieste[stato.pagina];
+      setPagina(mostrabile ? stato.pagina : 'home');
+    };
+    window.addEventListener('popstate', alCambioCronologia);
+    return () => window.removeEventListener('popstate', alCambioCronologia);
+  }, [eAdmin]);
 
   // Se il link contiene ?prenotazione=<id>, apriamo direttamente la
   // pagina di gestione con quella prenotazione già caricata — utile
@@ -64,30 +111,57 @@ export default function App() {
     return <Admin />;
   }
 
-  const vaiHome = () => {
-    setPagina('home');
+  const azzeraFlusso = () => {
     setMedicoSelezionato(null);
     setSlotSelezionato(null);
     setPazienteConfermato(null);
     setPrenotazioneIdConfermata(null);
   };
 
-  const vaiMedici = () => setPagina('medici');
+  const vaiHome = () => {
+    azzeraFlusso();
+    if (pagina !== 'home') naviga('home');
+  };
+
+  const vaiMedici = () => {
+    if (pagina !== 'medici') naviga('medici');
+  };
+
+  const vaiGestisci = () => {
+    setCodicePrenotazioneUrl(null);
+    if (pagina !== 'gestisci') naviga('gestisci');
+  };
+
+  // Pulsante "← Torna ..." delle pagine: usa la cronologia del browser,
+  // così "Indietro" e il link della pagina fanno la stessa cosa. Se la
+  // pagina è la prima visitata (link diretto), non c'è nulla dietro e
+  // si va alla pagina indicata.
+  const indietro = (paginaDiRiserva = 'home') => {
+    if ((window.history.state?.idx ?? 0) > 0) {
+      window.history.back();
+      return;
+    }
+    if (paginaDiRiserva === 'home') azzeraFlusso();
+    naviga(paginaDiRiserva, { sostituisci: true });
+  };
 
   const sceglimedico = (medico) => {
     setMedicoSelezionato(medico);
-    setPagina('slot');
+    naviga('slot');
   };
 
   const scegliSlot = (slot) => {
     setSlotSelezionato(slot);
-    setPagina('prenota');
+    naviga('prenota');
   };
 
+  // La pagina di conferma prende il posto del modulo nella cronologia:
+  // "Indietro" non riporta al modulo già inviato (rischio di doppia
+  // prenotazione), ma agli orari.
   const confermaPrenotazione = ({ paziente, prenotazioneId }) => {
     setPazienteConfermato(paziente);
     setPrenotazioneIdConfermata(prenotazioneId);
-    setPagina('conferma');
+    naviga('conferma', { sostituisci: true });
   };
 
   // Le pagine legali (Privacy, Termini) sono raggiungibili da ogni
@@ -95,10 +169,10 @@ export default function App() {
   // è partiti invece che sempre alla home.
   const vaiAPaginaLegale = (nomePagina) => {
     setPaginaPrecedente(pagina);
-    setPagina(nomePagina);
+    naviga(nomePagina);
   };
 
-  const tornaDaPaginaLegale = () => setPagina(paginaPrecedente);
+  const tornaDaPaginaLegale = () => indietro(paginaPrecedente);
 
   // Durante il flusso di prenotazione il link "Privacy" nel footer
   // punta all'informativa specifica per la prenotazione (quella che
@@ -137,13 +211,7 @@ export default function App() {
             <button className="nav-cta" onClick={vaiMedici}>
               Prenota una visita
             </button>
-            <button
-              className="nav-cta"
-              onClick={() => {
-                setCodicePrenotazioneUrl(null);
-                setPagina('gestisci');
-              }}
-            >
+            <button className="nav-cta" onClick={vaiGestisci}>
               Gestisci una prenotazione
             </button>
           </div>
@@ -153,11 +221,11 @@ export default function App() {
       {pagina === 'home' && <Home onVediMedici={vaiMedici} sede={sede} />}
 
       {pagina === 'medici' && (
-        <Medici onScegliMedico={sceglimedico} onIndietro={vaiHome} sedeId={sede?.id} />
+        <Medici onScegliMedico={sceglimedico} onIndietro={() => indietro('home')} sedeId={sede?.id} />
       )}
 
       {pagina === 'slot' && medicoSelezionato && (
-        <Slot medico={medicoSelezionato} onScegliSlot={scegliSlot} onIndietro={vaiMedici} />
+        <Slot medico={medicoSelezionato} onScegliSlot={scegliSlot} onIndietro={() => indietro('medici')} />
       )}
 
       {pagina === 'prenota' && medicoSelezionato && slotSelezionato && (
@@ -165,7 +233,7 @@ export default function App() {
           medico={medicoSelezionato}
           slot={slotSelezionato}
           onConfermata={confermaPrenotazione}
-          onIndietro={() => setPagina('slot')}
+          onIndietro={() => indietro('slot')}
         />
       )}
 
@@ -182,7 +250,7 @@ export default function App() {
       {pagina === 'gestisci' && (
         <GestisciPrenotazione
           codiceIniziale={codicePrenotazioneUrl}
-          onIndietro={vaiHome}
+          onIndietro={() => indietro('home')}
           onNuovaPrenotazione={vaiMedici}
         />
       )}
