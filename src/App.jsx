@@ -239,12 +239,8 @@ export default function App() {
         </div>
       </nav>
 
-      {pagina === 'home' && (
-        <>
-          {prenotazioniSospese && avvisoSospensione}
-          <Home onVediMedici={vaiMedici} sede={sede} />
-        </>
-      )}
+      {pagina === 'home' &&
+        (prenotazioniSospese ? avvisoSospensione : <Home onVediMedici={vaiMedici} sede={sede} />)}
 
       {pagina === 'medici' &&
         (prenotazioniSospese ? (
