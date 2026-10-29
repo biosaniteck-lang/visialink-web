@@ -179,6 +179,25 @@ export default function App() {
   // spiega il doppio ruolo Studio/VisiaLink), non a quella generica
   // del sito: è l'informativa pertinente mentre si stanno fornendo i
   // propri dati per prenotare.
+  // Studio sospeso (es. canone non pagato): niente nuove prenotazioni online.
+  // Restano accessibili la gestione/annullamento delle prenotazioni già fatte.
+  const prenotazioniSospese = sede?.sospesa === true;
+  const avvisoSospensione = (
+    <div className="container section">
+      <div className="summary-card">
+        <p style={{ fontWeight: 600, marginBottom: 8 }}>Prenotazioni online non disponibili</p>
+        <p style={{ color: 'var(--ink-soft)', marginBottom: 8 }}>
+          Questo studio non accetta al momento nuove prenotazioni online. Per fissare un appuntamento
+          contatta direttamente lo studio{sede?.telefono ? ` al ${sede.telefono}` : ''}.
+        </p>
+        <p style={{ color: 'var(--ink-soft)' }}>
+          Se hai già una prenotazione, puoi gestirla o annullarla con il pulsante «Gestisci una
+          prenotazione».
+        </p>
+      </div>
+    </div>
+  );
+
   const PAGINE_FLUSSO_PRENOTAZIONE = ['medici', 'slot', 'prenota', 'conferma'];
   const paginaPrivacyPertinente = PAGINE_FLUSSO_PRENOTAZIONE.includes(pagina)
     ? 'privacy-prenotazione'
@@ -208,9 +227,11 @@ export default function App() {
             VisiaLink
           </button>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-            <button className="nav-cta" onClick={vaiMedici}>
-              Prenota una visita
-            </button>
+            {!prenotazioniSospese && (
+              <button className="nav-cta" onClick={vaiMedici}>
+                Prenota una visita
+              </button>
+            )}
             <button className="nav-cta" onClick={vaiGestisci}>
               Gestisci una prenotazione
             </button>
@@ -218,24 +239,41 @@ export default function App() {
         </div>
       </nav>
 
-      {pagina === 'home' && <Home onVediMedici={vaiMedici} sede={sede} />}
-
-      {pagina === 'medici' && (
-        <Medici onScegliMedico={sceglimedico} onIndietro={() => indietro('home')} sedeId={sede?.id} />
+      {pagina === 'home' && (
+        <>
+          {prenotazioniSospese && avvisoSospensione}
+          <Home onVediMedici={vaiMedici} sede={sede} />
+        </>
       )}
 
-      {pagina === 'slot' && medicoSelezionato && (
-        <Slot medico={medicoSelezionato} onScegliSlot={scegliSlot} onIndietro={() => indietro('medici')} />
-      )}
+      {pagina === 'medici' &&
+        (prenotazioniSospese ? (
+          avvisoSospensione
+        ) : (
+          <Medici onScegliMedico={sceglimedico} onIndietro={() => indietro('home')} sedeId={sede?.id} />
+        ))}
 
-      {pagina === 'prenota' && medicoSelezionato && slotSelezionato && (
-        <Prenota
-          medico={medicoSelezionato}
-          slot={slotSelezionato}
-          onConfermata={confermaPrenotazione}
-          onIndietro={() => indietro('slot')}
-        />
-      )}
+      {pagina === 'slot' &&
+        medicoSelezionato &&
+        (prenotazioniSospese ? (
+          avvisoSospensione
+        ) : (
+          <Slot medico={medicoSelezionato} onScegliSlot={scegliSlot} onIndietro={() => indietro('medici')} />
+        ))}
+
+      {pagina === 'prenota' &&
+        medicoSelezionato &&
+        slotSelezionato &&
+        (prenotazioniSospese ? (
+          avvisoSospensione
+        ) : (
+          <Prenota
+            medico={medicoSelezionato}
+            slot={slotSelezionato}
+            onConfermata={confermaPrenotazione}
+            onIndietro={() => indietro('slot')}
+          />
+        ))}
 
       {pagina === 'conferma' && medicoSelezionato && slotSelezionato && pazienteConfermato && (
         <Conferma
