@@ -63,6 +63,65 @@ function BottoneBackup({ adminKey }) {
   );
 }
 
+function SospensioneStudio({ adminKey, sede, onAggiornata }) {
+  const [invio, setInvio] = useState(false);
+  const [errore, setErrore] = useState(null);
+  const sospeso = sede.sospesa === true;
+
+  const handleCambia = async () => {
+    const messaggio = sospeso
+      ? `Riattivare le prenotazioni di "${sede.nome}"?`
+      : `Sospendere le nuove prenotazioni di "${sede.nome}"?\n\nI dati restano intatti, le visite già fissate restano valide e lo studio potrà solo consultare ed esportare i propri dati.`;
+    if (!window.confirm(messaggio)) return;
+
+    setErrore(null);
+    setInvio(true);
+    try {
+      const sedeAggiornata = await api.aggiornaSede(sede.id, { sospesa: !sospeso }, adminKey);
+      onAggiornata(sedeAggiornata);
+    } catch (err) {
+      setErrore(err.message);
+    } finally {
+      setInvio(false);
+    }
+  };
+
+  const dataSospensione = sede.sospesa_il
+    ? new Date(sede.sospesa_il).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' })
+    : null;
+
+  return (
+    <div className="summary-card" style={{ borderLeftColor: sospeso ? 'var(--rust)' : 'var(--sage)' }}>
+      <p style={{ fontWeight: 600, marginBottom: 8 }}>Stato dell'abbonamento</p>
+      {errore && <div className="error-box">{errore}</div>}
+      {sospeso ? (
+        <p style={{ color: 'var(--rust)', marginBottom: 12 }}>
+          <strong>Sospeso</strong>
+          {dataSospensione ? ` dal ${dataSospensione}` : ''}: i pazienti non possono prenotare e lo studio
+          può solo consultare ed esportare i dati.
+        </p>
+      ) : (
+        <p style={{ color: 'var(--sage)', marginBottom: 12 }}>
+          <strong>Attivo</strong>: le prenotazioni sono aperte.
+        </p>
+      )}
+      <p style={{ color: 'var(--ink-soft)', fontSize: 14, marginBottom: 12 }}>
+        La sospensione non cancella nulla: medici, slot, pazienti e prenotazioni restano dove sono. Le visite
+        già fissate restano valide (i pazienti possono ancora annullarle) e i promemoria continuano a partire.
+        Per riattivare basta un clic.
+      </p>
+      <button
+        className="ledger-action"
+        style={sospeso ? undefined : { borderColor: 'var(--rust)', color: 'var(--rust)' }}
+        onClick={handleCambia}
+        disabled={invio}
+      >
+        {invio ? 'Salvataggio…' : sospeso ? 'Riattiva prenotazioni' : 'Sospendi prenotazioni'}
+      </button>
+    </div>
+  );
+}
+
 function FormModificaStudio({ adminKey, sede, onAggiornata }) {
   const [nome, setNome] = useState(sede.nome);
   const [telefono, setTelefono] = useState(sede.telefono || '');
@@ -1239,7 +1298,7 @@ function sede_slugify(testo) {
     .replace(/(^-|-$)/g, '');
 }
 
-function DettaglioStudio({ adminKey, sede, onIndietro, onSedeAggiornata }) {
+function DettaglioStudio({ adminKey, sede, superAdmin, onIndietro, onSedeAggiornata }) {
   const [medici, setMedici] = useState([]);
   const [caricamento, setCaricamento] = useState(true);
 
@@ -1276,6 +1335,16 @@ function DettaglioStudio({ adminKey, sede, onIndietro, onSedeAggiornata }) {
         <p style={{ fontWeight: 600 }}>Link di prenotazione da consegnare al cliente</p>
         <p style={{ wordBreak: 'break-all' }}>{linkPrenotazione}</p>
       </div>
+
+      {superAdmin && <SospensioneStudio adminKey={adminKey} sede={sede} onAggiornata={onSedeAggiornata} />}
+
+      {!superAdmin && sede.sospesa === true && (
+        <div className="error-box" style={{ marginBottom: 24 }}>
+          <strong>Account sospeso.</strong> I pazienti non possono fare nuove prenotazioni e puoi solo
+          consultare ed esportare i tuoi dati. Per riattivare il servizio contatta MLM ICT Service. I tuoi
+          dati sono al sicuro e le visite già fissate restano valide.
+        </div>
+      )}
 
       <FormModificaStudio adminKey={adminKey} sede={sede} onAggiornata={onSedeAggiornata} />
 
@@ -1406,6 +1475,7 @@ export default function Admin() {
       <DettaglioStudio
         adminKey={adminKey}
         sede={identita.sede}
+        superAdmin={false}
         onSedeAggiornata={gestisciSedeAggiornata}
       />
     );
@@ -1416,6 +1486,7 @@ export default function Admin() {
       <DettaglioStudio
         adminKey={adminKey}
         sede={sedeSelezionata}
+        superAdmin
         onIndietro={() => setSedeSelezionata(null)}
         onSedeAggiornata={gestisciSedeAggiornata}
       />
@@ -1447,6 +1518,7 @@ export default function Admin() {
               <span className="ledger-name">{s.nome}</span>
               <span className="ledger-meta">
                 /{s.slug} · chiave: {s.chiave_accesso || 'nessuna'}
+                {s.sospesa === true && <strong style={{ color: 'var(--rust)' }}> · SOSPESO</strong>}
               </span>
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
